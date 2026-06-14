@@ -75,8 +75,9 @@ function App() {
           <button type="button" className="toolbar-button">
             恢复
           </button>
-          <button type="button" className="toolbar-button toolbar-button-primary">
-            导出 JSON
+          <button type="button" className="toolbar-button toolbar-button-primary toolbar-button-export">
+            <span className="toolbar-button-label">导出</span>
+            <span className="toolbar-button-token">JSON</span>
           </button>
         </div>
       </header>
