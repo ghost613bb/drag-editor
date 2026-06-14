@@ -1,18 +1,70 @@
+import { mockPageSchema } from '@/features/editor/mockSchema'
+import type { ComponentNode } from '@/types/schema'
 import '@/styles/app.css'
 
 const materialItems = ['Banner', 'Text', 'Container']
-const propertyFields = [
-  { label: '组件类型', value: 'Banner' },
-  { label: '标题', value: '夏日营销活动' },
-  { label: '描述', value: '这里会在下一阶段接入真实属性表单。' },
-]
+
+function renderCanvasNode(node: ComponentNode) {
+  switch (node.type) {
+    case 'banner':
+      return (
+        <article key={node.id} className="canvas-banner">
+          <span className="canvas-node-type">{node.type}</span>
+          <strong>{node.props.title}</strong>
+          <p>{node.props.description}</p>
+        </article>
+      )
+
+    case 'text':
+      return (
+        <article key={node.id} className="canvas-text">
+          <span className="canvas-node-type">{node.type}</span>
+          <p style={{ color: node.props.color, fontSize: `${node.props.fontSize}px` }}>
+            {node.props.content}
+          </p>
+        </article>
+      )
+
+    case 'container':
+      return (
+        <article
+          key={node.id}
+          className="canvas-container"
+          style={{
+            gap: `${node.props.gap}px`,
+            padding: `${node.props.padding}px`,
+            backgroundColor: node.props.backgroundColor,
+          }}
+        >
+          <div className="canvas-container-header">
+            <span className="canvas-node-type">{node.type}</span>
+            <span>
+              {node.props.direction} / {node.children.length} children
+            </span>
+          </div>
+
+          <div className="canvas-container-children">{node.children.map(renderCanvasNode)}</div>
+        </article>
+      )
+
+    default:
+      return null
+  }
+}
 
 function App() {
+  const selectedNode = mockPageSchema.root.children[0]
+  const propertyFields = [
+    { label: '页面标题', value: mockPageSchema.pageMeta.title },
+    { label: '当前示例节点', value: selectedNode.type },
+    { label: '节点 ID', value: selectedNode.id },
+  ]
+
   return (
     <div className="editor-layout">
       <header className="editor-header">
         <div>
-          <p className="editor-kicker">Phase 1</p>
+          <p className="editor-kicker">Phase 2</p>
           <h1 className="editor-title">低代码编辑器页面骨架</h1>
         </div>
 
@@ -33,7 +85,7 @@ function App() {
         <aside className="editor-panel editor-panel-left">
           <div className="panel-header">
             <h2>物料面板</h2>
-            <span>3 个基础组件</span>
+            <span>{materialItems.length} 个基础组件</span>
           </div>
 
           <div className="material-list">
@@ -49,22 +101,18 @@ function App() {
         <section className="editor-panel editor-panel-center">
           <div className="panel-header">
             <h2>画布区域</h2>
-            <span>静态占位，下一步接 schema</span>
+            <span>{mockPageSchema.pageMeta.title}</span>
           </div>
 
           <div className="canvas-stage">
-            <div className="canvas-page">
-              <div className="canvas-banner">Banner 组件占位</div>
-              <div className="canvas-text">Text 组件占位</div>
-              <div className="canvas-container">Container 组件占位</div>
-            </div>
+            <div className="canvas-page">{mockPageSchema.root.children.map(renderCanvasNode)}</div>
           </div>
         </section>
 
         <aside className="editor-panel editor-panel-right">
           <div className="panel-header">
             <h2>属性面板</h2>
-            <span>当前为静态展示</span>
+            <span>当前读取 mock schema</span>
           </div>
 
           <div className="property-list">
@@ -81,12 +129,13 @@ function App() {
       <section className="editor-preview editor-panel">
         <div className="panel-header">
           <h2>预览面板</h2>
-          <span>后续会由 Renderer 根据 schema 渲染</span>
+          <span>当前展示 schema 摘要</span>
         </div>
 
         <div className="preview-card">
-          <p>这里用于展示页面实时预览效果。</p>
-          <p>当前仅用于确认整体布局已经搭好。</p>
+          <p>schema version: {mockPageSchema.version}</p>
+          <p>root children: {mockPageSchema.root.children.length}</p>
+          <p>{mockPageSchema.pageMeta.description}</p>
         </div>
       </section>
     </div>

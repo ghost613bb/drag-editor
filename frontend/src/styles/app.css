@@ -130,29 +130,77 @@
   gap: 16px;
 }
 
+.canvas-node-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .canvas-banner,
 .canvas-text,
 .canvas-container {
   border-radius: 16px;
   padding: 18px;
-  font-weight: 600;
+  box-sizing: border-box;
 }
 
 .canvas-banner {
+  display: grid;
+  gap: 10px;
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
   color: #ffffff;
 }
 
+.canvas-banner strong {
+  font-size: 24px;
+}
+
+.canvas-banner p,
+.canvas-text p {
+  margin: 0;
+}
+
 .canvas-text {
+  display: grid;
+  gap: 10px;
   background: #e0f2fe;
   color: #0f172a;
 }
 
+.canvas-text .canvas-node-type {
+  background: rgba(15, 23, 42, 0.08);
+}
+
 .canvas-container {
+  display: grid;
+  gap: 14px;
   min-height: 140px;
   border: 1px dashed #94a3b8;
-  background: #f8fafc;
   color: #475569;
+}
+
+.canvas-container-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.canvas-container-header .canvas-node-type {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.canvas-container-children {
+  display: grid;
+  gap: 12px;
 }
 
 .property-list {
