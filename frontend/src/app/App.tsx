@@ -1,22 +1,37 @@
+import { useState } from 'react'
 import { PureRenderer } from '@/components/renderer/PureRenderer'
+import { componentRegistry } from '@/features/editor/componentRegistry'
+import { createDefaultNode } from '@/features/editor/createDefaultNode'
 import { mockPageSchema } from '@/features/editor/mockSchema'
+import type { ComponentNode, ComponentType } from '@/types/schema'
 import '@/styles/app.css'
 
-const materialItems = ['Banner', 'Text', 'Container']
-
 function App() {
+  const materialItems = Object.values(componentRegistry)
   const selectedNode = mockPageSchema.root.children[0]
+  const [draftNode, setDraftNode] = useState<ComponentNode | null>(null)
+
+  const inspectorNode = draftNode ?? selectedNode
   const propertyFields = [
     { label: '页面标题', value: mockPageSchema.pageMeta.title },
-    { label: '当前示例节点', value: selectedNode.type },
-    { label: '节点 ID', value: selectedNode.id },
+    { label: '数据来源', value: draftNode ? 'createDefaultNode' : 'mock schema' },
+    { label: '当前节点', value: componentRegistry[inspectorNode.type].label },
+    { label: '节点 ID', value: inspectorNode.id },
+    {
+      label: '组件能力',
+      value: componentRegistry[inspectorNode.type].canHaveChildren ? '可承载子节点' : '基础叶子组件',
+    },
   ]
+
+  const handleCreateDraftNode = (type: ComponentType) => {
+    setDraftNode(createDefaultNode(type))
+  }
 
   return (
     <div className="editor-layout">
       <header className="editor-header">
         <div>
-          <p className="editor-kicker">Phase 2</p>
+          <p className="editor-kicker">Phase 3</p>
           <h1 className="editor-title">低代码编辑器页面骨架</h1>
         </div>
 
@@ -43,9 +58,16 @@ function App() {
 
           <div className="material-list">
             {materialItems.map((item) => (
-              <button key={item} type="button" className="material-card">
-                <strong>{item}</strong>
-                <span>后续接入 registry / 拖拽</span>
+              <button
+                key={item.type}
+                type="button"
+                className={`material-card ${draftNode?.type === item.type ? 'material-card-active' : ''}`}
+                onClick={() => handleCreateDraftNode(item.type)}
+              >
+                <strong>{item.label}</strong>
+                <span>
+                  {item.canHaveChildren ? '可承载子节点' : '基础叶子组件'} / type: {item.type}
+                </span>
               </button>
             ))}
           </div>
@@ -67,7 +89,7 @@ function App() {
         <aside className="editor-panel editor-panel-right">
           <div className="panel-header">
             <h2>属性面板</h2>
-            <span>当前读取 mock schema</span>
+            <span>{draftNode ? '当前展示默认节点草稿' : '当前读取 mock schema'}</span>
           </div>
 
           <div className="property-list">
@@ -84,13 +106,19 @@ function App() {
       <section className="editor-preview editor-panel">
         <div className="panel-header">
           <h2>预览面板</h2>
-          <span>当前展示 schema 摘要</span>
+          <span>{draftNode ? '当前展示新建默认节点结果' : '当前展示 schema 摘要'}</span>
         </div>
 
         <div className="preview-card">
-          <p>schema version: {mockPageSchema.version}</p>
-          <p>root children: {mockPageSchema.root.children.length}</p>
-          <p>{mockPageSchema.pageMeta.description}</p>
+          {draftNode ? (
+            <pre className="preview-code">{JSON.stringify(draftNode, null, 2)}</pre>
+          ) : (
+            <>
+              <p>schema version: {mockPageSchema.version}</p>
+              <p>root children: {mockPageSchema.root.children.length}</p>
+              <p>{mockPageSchema.pageMeta.description}</p>
+            </>
+          )}
         </div>
       </section>
     </div>
