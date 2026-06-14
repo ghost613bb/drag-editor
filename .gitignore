@@ -13,3 +13,4 @@ backend/node_modules
 backend/dist
 
 docs
+package-lock.json
