@@ -1,56 +1,8 @@
+import { PureRenderer } from '@/components/renderer/PureRenderer'
 import { mockPageSchema } from '@/features/editor/mockSchema'
-import type { ComponentNode } from '@/types/schema'
 import '@/styles/app.css'
 
 const materialItems = ['Banner', 'Text', 'Container']
-
-function renderCanvasNode(node: ComponentNode) {
-  switch (node.type) {
-    case 'banner':
-      return (
-        <article key={node.id} className="canvas-banner">
-          <span className="canvas-node-type">{node.type}</span>
-          <strong>{node.props.title}</strong>
-          <p>{node.props.description}</p>
-        </article>
-      )
-
-    case 'text':
-      return (
-        <article key={node.id} className="canvas-text">
-          <span className="canvas-node-type">{node.type}</span>
-          <p style={{ color: node.props.color, fontSize: `${node.props.fontSize}px` }}>
-            {node.props.content}
-          </p>
-        </article>
-      )
-
-    case 'container':
-      return (
-        <article
-          key={node.id}
-          className="canvas-container"
-          style={{
-            gap: `${node.props.gap}px`,
-            padding: `${node.props.padding}px`,
-            backgroundColor: node.props.backgroundColor,
-          }}
-        >
-          <div className="canvas-container-header">
-            <span className="canvas-node-type">{node.type}</span>
-            <span>
-              {node.props.direction} / {node.children.length} children
-            </span>
-          </div>
-
-          <div className="canvas-container-children">{node.children.map(renderCanvasNode)}</div>
-        </article>
-      )
-
-    default:
-      return null
-  }
-}
 
 function App() {
   const selectedNode = mockPageSchema.root.children[0]
@@ -106,7 +58,9 @@ function App() {
           </div>
 
           <div className="canvas-stage">
-            <div className="canvas-page">{mockPageSchema.root.children.map(renderCanvasNode)}</div>
+            <div className="canvas-page">
+              <PureRenderer schema={mockPageSchema} />
+            </div>
           </div>
         </section>
 

@@ -54,3 +54,24 @@ export interface PageSchema {
   pageMeta: PageMeta
   root: ContainerNode
 }
+
+export interface EditorDocumentState {
+  currentSchema: PageSchema
+  publishedSchema: PageSchema | null
+  dirty: boolean
+}
+
+export type AsyncStatus = 'idle' | 'loading' | 'success' | 'error'
+
+export interface EditorUIState {
+  selectedId: NodeId | null
+  hoveredId: NodeId | null
+  saveStatus: AsyncStatus
+  loadStatus: AsyncStatus
+  statusMessage: string
+}
+
+export interface EditorState {
+  document: EditorDocumentState
+  ui: EditorUIState
+}
