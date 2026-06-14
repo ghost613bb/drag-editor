@@ -1,57 +1,95 @@
-import { useState } from 'react'
-import { fetchHealth, type HealthResponse } from '@/services/api/health'
 import '@/styles/app.css'
 
-type RequestStatus = 'idle' | 'loading' | 'success' | 'error'
+const materialItems = ['Banner', 'Text', 'Container']
+const propertyFields = [
+  { label: '组件类型', value: 'Banner' },
+  { label: '标题', value: '夏日营销活动' },
+  { label: '描述', value: '这里会在下一阶段接入真实属性表单。' },
+]
 
 function App() {
-  const [status, setStatus] = useState<RequestStatus>('idle')
-  const [result, setResult] = useState<HealthResponse | null>(null)
-  const [errorMessage, setErrorMessage] = useState('')
-
-  const handleCheckBackend = async () => {
-    try {
-      setStatus('loading')
-      setErrorMessage('')
-
-      const data = await fetchHealth()
-
-      setResult(data)
-      setStatus('success')
-    } catch (error) {
-      setResult(null)
-      setStatus('error')
-      setErrorMessage(error instanceof Error ? error.message : 'Unknown error')
-    }
-  }
-
   return (
-    <main className="app-shell">
-      <section className="panel">
-        <p className="eyebrow">Phase 0</p>
-        <h1>低代码编辑器初始化工程</h1>
-        <p className="description">
-          当前页面用于验证前端 React 工程、Vite 代理和后端 Koa 服务是否已经打通。
-        </p>
+    <div className="editor-layout">
+      <header className="editor-header">
+        <div>
+          <p className="editor-kicker">Phase 1</p>
+          <h1 className="editor-title">低代码编辑器页面骨架</h1>
+        </div>
 
-        <div className="actions">
-          <button type="button" className="primary-button" onClick={handleCheckBackend}>
-            {status === 'loading' ? '检查中...' : '检查后端健康状态'}
+        <div className="editor-toolbar">
+          <button type="button" className="toolbar-button">
+            保存
+          </button>
+          <button type="button" className="toolbar-button">
+            恢复
+          </button>
+          <button type="button" className="toolbar-button toolbar-button-primary">
+            导出 JSON
           </button>
         </div>
+      </header>
 
-        <div className="result-card">
-          <p className="result-label">当前状态</p>
-          <p className={`status status-${status}`}>{status}</p>
+      <main className="editor-main">
+        <aside className="editor-panel editor-panel-left">
+          <div className="panel-header">
+            <h2>物料面板</h2>
+            <span>3 个基础组件</span>
+          </div>
 
-          {result ? (
-            <pre className="result-content">{JSON.stringify(result, null, 2)}</pre>
-          ) : null}
+          <div className="material-list">
+            {materialItems.map((item) => (
+              <button key={item} type="button" className="material-card">
+                <strong>{item}</strong>
+                <span>后续接入 registry / 拖拽</span>
+              </button>
+            ))}
+          </div>
+        </aside>
 
-          {errorMessage ? <p className="error-message">{errorMessage}</p> : null}
+        <section className="editor-panel editor-panel-center">
+          <div className="panel-header">
+            <h2>画布区域</h2>
+            <span>静态占位，下一步接 schema</span>
+          </div>
+
+          <div className="canvas-stage">
+            <div className="canvas-page">
+              <div className="canvas-banner">Banner 组件占位</div>
+              <div className="canvas-text">Text 组件占位</div>
+              <div className="canvas-container">Container 组件占位</div>
+            </div>
+          </div>
+        </section>
+
+        <aside className="editor-panel editor-panel-right">
+          <div className="panel-header">
+            <h2>属性面板</h2>
+            <span>当前为静态展示</span>
+          </div>
+
+          <div className="property-list">
+            {propertyFields.map((field) => (
+              <div key={field.label} className="property-item">
+                <label>{field.label}</label>
+                <div className="property-value">{field.value}</div>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </main>
+
+      <section className="editor-preview editor-panel">
+        <div className="panel-header">
+          <h2>预览面板</h2>
+          <span>后续会由 Renderer 根据 schema 渲染</span>
+        </div>
+
+        <div className="preview-card">
+          <p>这里用于展示页面实时预览效果。</p>
+          <p>当前仅用于确认整体布局已经搭好。</p>
         </div>
       </section>
-    </main>
+    </div>
   )
 }
 
