@@ -1,121 +1,57 @@
 import { useState } from 'react'
-import reactLogo from '../assets/react.svg'
-import viteLogo from '../assets/vite.svg'
-import heroImg from '../assets/hero.png'
-import '../styles/app.css'
+import { fetchHealth, type HealthResponse } from '@/services/api/health'
+import '@/styles/app.css'
+
+type RequestStatus = 'idle' | 'loading' | 'success' | 'error'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [status, setStatus] = useState<RequestStatus>('idle')
+  const [result, setResult] = useState<HealthResponse | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const handleCheckBackend = async () => {
+    try {
+      setStatus('loading')
+      setErrorMessage('')
+
+      const data = await fetchHealth()
+
+      setResult(data)
+      setStatus('success')
+    } catch (error) {
+      setResult(null)
+      setStatus('error')
+      setErrorMessage(error instanceof Error ? error.message : 'Unknown error')
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/app/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <main className="app-shell">
+      <section className="panel">
+        <p className="eyebrow">Phase 0</p>
+        <h1>低代码编辑器初始化工程</h1>
+        <p className="description">
+          当前页面用于验证前端 React 工程、Vite 代理和后端 Koa 服务是否已经打通。
+        </p>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div className="actions">
+          <button type="button" className="primary-button" onClick={handleCheckBackend}>
+            {status === 'loading' ? '检查中...' : '检查后端健康状态'}
+          </button>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+
+        <div className="result-card">
+          <p className="result-label">当前状态</p>
+          <p className={`status status-${status}`}>{status}</p>
+
+          {result ? (
+            <pre className="result-content">{JSON.stringify(result, null, 2)}</pre>
+          ) : null}
+
+          {errorMessage ? <p className="error-message">{errorMessage}</p> : null}
         </div>
       </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </main>
   )
 }
 
