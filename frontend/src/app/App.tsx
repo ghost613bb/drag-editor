@@ -1,22 +1,26 @@
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { PureRenderer } from '@/components/renderer/PureRenderer'
 import { componentRegistry } from '@/features/editor/componentRegistry'
 import { createDefaultNode } from '@/features/editor/createDefaultNode'
-import { mockPageSchema } from '@/features/editor/mockSchema'
+import type { RootState } from '@/app/store'
 import type { ComponentNode, ComponentType } from '@/types/schema'
 import '@/styles/app.css'
 
 function App() {
   const materialItems = Object.values(componentRegistry)
-  const selectedNode = mockPageSchema.root.children[0]
+  const currentSchema = useSelector((state: RootState) => state.editor.document.currentSchema)
+  const selectedId = useSelector((state: RootState) => state.editor.ui.selectedId)
   const [draftNode, setDraftNode] = useState<ComponentNode | null>(null)
 
+  const selectedNode = currentSchema.root.children[0]
   const inspectorNode = draftNode ?? selectedNode
   const propertyFields = [
-    { label: '页面标题', value: mockPageSchema.pageMeta.title },
-    { label: '数据来源', value: draftNode ? 'createDefaultNode' : 'mock schema' },
+    { label: '页面标题', value: currentSchema.pageMeta.title },
+    { label: '数据来源', value: draftNode ? 'createDefaultNode' : 'redux editor.document' },
     { label: '当前节点', value: componentRegistry[inspectorNode.type].label },
     { label: '节点 ID', value: inspectorNode.id },
+    { label: 'Redux selectedId', value: selectedId ?? '未选中' },
     {
       label: '组件能力',
       value: componentRegistry[inspectorNode.type].canHaveChildren ? '可承载子节点' : '基础叶子组件',
@@ -31,7 +35,7 @@ function App() {
     <div className="editor-layout">
       <header className="editor-header">
         <div>
-          <p className="editor-kicker">Phase 3</p>
+          <p className="editor-kicker">Phase 4</p>
           <h1 className="editor-title">低代码编辑器页面骨架</h1>
         </div>
 
@@ -76,12 +80,12 @@ function App() {
         <section className="editor-panel editor-panel-center">
           <div className="panel-header">
             <h2>画布区域</h2>
-            <span>{mockPageSchema.pageMeta.title}</span>
+            <span>{currentSchema.pageMeta.title}</span>
           </div>
 
           <div className="canvas-stage">
             <div className="canvas-page">
-              <PureRenderer schema={mockPageSchema} />
+              <PureRenderer schema={currentSchema} />
             </div>
           </div>
         </section>
@@ -89,7 +93,7 @@ function App() {
         <aside className="editor-panel editor-panel-right">
           <div className="panel-header">
             <h2>属性面板</h2>
-            <span>{draftNode ? '当前展示默认节点草稿' : '当前读取 mock schema'}</span>
+            <span>{draftNode ? '当前展示默认节点草稿' : '当前读取 Redux store'}</span>
           </div>
 
           <div className="property-list">
@@ -106,7 +110,7 @@ function App() {
       <section className="editor-preview editor-panel">
         <div className="panel-header">
           <h2>预览面板</h2>
-          <span>{draftNode ? '当前展示新建默认节点结果' : '当前展示 schema 摘要'}</span>
+          <span>{draftNode ? '当前展示新建默认节点结果' : '当前展示 Redux schema 摘要'}</span>
         </div>
 
         <div className="preview-card">
@@ -114,9 +118,9 @@ function App() {
             <pre className="preview-code">{JSON.stringify(draftNode, null, 2)}</pre>
           ) : (
             <>
-              <p>schema version: {mockPageSchema.version}</p>
-              <p>root children: {mockPageSchema.root.children.length}</p>
-              <p>{mockPageSchema.pageMeta.description}</p>
+              <p>schema version: {currentSchema.version}</p>
+              <p>root children: {currentSchema.root.children.length}</p>
+              <p>{currentSchema.pageMeta.description}</p>
             </>
           )}
         </div>
