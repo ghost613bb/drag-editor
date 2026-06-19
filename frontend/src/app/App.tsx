@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { PropertyPanel } from '@/components/inspector/PropertyPanel'
 import { PureRenderer } from '@/components/renderer/PureRenderer'
 import type { AppDispatch, RootState } from '@/app/store'
 import { componentRegistry } from '@/features/editor/componentRegistry'
@@ -17,18 +18,6 @@ function App() {
   const [draftNode, setDraftNode] = useState<ComponentNode | null>(null)
 
   const selectedNode = selectedId ? findNodeById(currentSchema.root, selectedId) : null
-  const propertyFields = selectedNode
-    ? [
-        { label: '页面标题', value: currentSchema.pageMeta.title },
-        { label: '当前节点', value: componentRegistry[selectedNode.type].label },
-        { label: '节点 ID', value: selectedNode.id },
-        { label: 'Redux selectedId', value: selectedId ?? '未选中' },
-        {
-          label: '组件能力',
-          value: componentRegistry[selectedNode.type].canHaveChildren ? '可承载子节点' : '基础叶子组件',
-        },
-      ]
-    : []
 
   const handleCreateDraftNode = (type: ComponentType) => {
     setDraftNode(createDefaultNode(type))
@@ -104,24 +93,14 @@ function App() {
         <aside className="editor-panel editor-panel-right">
           <div className="panel-header">
             <h2>属性面板</h2>
-            <span>{selectedNode ? '当前展示画布选中节点' : '点击画布节点查看属性'}</span>
+            <span>{selectedNode ? '按节点类型展示属性' : '点击画布节点查看属性'}</span>
           </div>
 
-          {selectedNode ? (
-            <div className="property-list">
-              {propertyFields.map((field) => (
-                <div key={field.label} className="property-item">
-                  <label>{field.label}</label>
-                  <div className="property-value">{field.value}</div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="panel-empty-state">
-              <p>当前还没有选中节点。</p>
-              <p>点击画布中的 Banner / Text / Container 后，这里会展示对应节点信息。</p>
-            </div>
-          )}
+          <PropertyPanel
+            pageTitle={currentSchema.pageMeta.title}
+            selectedId={selectedId}
+            selectedNode={selectedNode}
+          />
         </aside>
       </main>
 
