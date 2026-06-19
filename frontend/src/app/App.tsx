@@ -1,34 +1,41 @@
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { PureRenderer } from '@/components/renderer/PureRenderer'
+import type { AppDispatch, RootState } from '@/app/store'
 import { componentRegistry } from '@/features/editor/componentRegistry'
 import { createDefaultNode } from '@/features/editor/createDefaultNode'
-import type { RootState } from '@/app/store'
+import { selectNode } from '@/features/editor/editorSlice'
+import { findNodeById } from '@/features/editor/findNodeById'
 import type { ComponentNode, ComponentType } from '@/types/schema'
 import '@/styles/app.css'
 
 function App() {
+  const dispatch = useDispatch<AppDispatch>()
   const materialItems = Object.values(componentRegistry)
   const currentSchema = useSelector((state: RootState) => state.editor.document.currentSchema)
   const selectedId = useSelector((state: RootState) => state.editor.ui.selectedId)
   const [draftNode, setDraftNode] = useState<ComponentNode | null>(null)
 
-  const selectedNode = currentSchema.root.children[0]
-  const inspectorNode = draftNode ?? selectedNode
-  const propertyFields = [
-    { label: '页面标题', value: currentSchema.pageMeta.title },
-    { label: '数据来源', value: draftNode ? 'createDefaultNode' : 'redux editor.document' },
-    { label: '当前节点', value: componentRegistry[inspectorNode.type].label },
-    { label: '节点 ID', value: inspectorNode.id },
-    { label: 'Redux selectedId', value: selectedId ?? '未选中' },
-    {
-      label: '组件能力',
-      value: componentRegistry[inspectorNode.type].canHaveChildren ? '可承载子节点' : '基础叶子组件',
-    },
-  ]
+  const selectedNode = selectedId ? findNodeById(currentSchema.root, selectedId) : null
+  const propertyFields = selectedNode
+    ? [
+        { label: '页面标题', value: currentSchema.pageMeta.title },
+        { label: '当前节点', value: componentRegistry[selectedNode.type].label },
+        { label: '节点 ID', value: selectedNode.id },
+        { label: 'Redux selectedId', value: selectedId ?? '未选中' },
+        {
+          label: '组件能力',
+          value: componentRegistry[selectedNode.type].canHaveChildren ? '可承载子节点' : '基础叶子组件',
+        },
+      ]
+    : []
 
   const handleCreateDraftNode = (type: ComponentType) => {
     setDraftNode(createDefaultNode(type))
+  }
+
+  const handleSelectNode = (nodeId: string) => {
+    dispatch(selectNode(nodeId))
   }
 
   return (
@@ -85,7 +92,11 @@ function App() {
 
           <div className="canvas-stage">
             <div className="canvas-page">
-              <PureRenderer schema={currentSchema} />
+              <PureRenderer
+                schema={currentSchema}
+                selectedId={selectedId}
+                onNodeClick={handleSelectNode}
+              />
             </div>
           </div>
         </section>
@@ -93,17 +104,24 @@ function App() {
         <aside className="editor-panel editor-panel-right">
           <div className="panel-header">
             <h2>属性面板</h2>
-            <span>{draftNode ? '当前展示默认节点草稿' : '当前读取 Redux store'}</span>
+            <span>{selectedNode ? '当前展示画布选中节点' : '点击画布节点查看属性'}</span>
           </div>
 
-          <div className="property-list">
-            {propertyFields.map((field) => (
-              <div key={field.label} className="property-item">
-                <label>{field.label}</label>
-                <div className="property-value">{field.value}</div>
-              </div>
-            ))}
-          </div>
+          {selectedNode ? (
+            <div className="property-list">
+              {propertyFields.map((field) => (
+                <div key={field.label} className="property-item">
+                  <label>{field.label}</label>
+                  <div className="property-value">{field.value}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="panel-empty-state">
+              <p>当前还没有选中节点。</p>
+              <p>点击画布中的 Banner / Text / Container 后，这里会展示对应节点信息。</p>
+            </div>
+          )}
         </aside>
       </main>
 

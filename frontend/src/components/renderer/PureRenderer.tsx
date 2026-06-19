@@ -1,14 +1,28 @@
-import type { ComponentNode, PageSchema } from '@/types/schema'
+import type { ComponentNode, NodeId, PageSchema } from '@/types/schema'
 
 interface PureRendererProps {
   schema: PageSchema
+  selectedId?: NodeId | null
+  onNodeClick?: (nodeId: NodeId) => void
 }
 
-function renderNode(node: ComponentNode) {
+function renderNode(node: ComponentNode, selectedId?: NodeId | null, onNodeClick?: (nodeId: NodeId) => void) {
+  const isSelected = node.id === selectedId
+  const selectedClassName = isSelected ? ' canvas-node-selected' : ''
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation()
+    onNodeClick?.(node.id)
+  }
+
   switch (node.type) {
     case 'banner':
       return (
-        <article key={node.id} className="canvas-banner">
+        <article
+          key={node.id}
+          className={`canvas-banner canvas-node${selectedClassName}`}
+          onClick={handleClick}
+        >
           <span className="canvas-node-type">{node.type}</span>
           <strong>{node.props.title}</strong>
           <p>{node.props.description}</p>
@@ -17,7 +31,11 @@ function renderNode(node: ComponentNode) {
 
     case 'text':
       return (
-        <article key={node.id} className="canvas-text">
+        <article
+          key={node.id}
+          className={`canvas-text canvas-node${selectedClassName}`}
+          onClick={handleClick}
+        >
           <span className="canvas-node-type">{node.type}</span>
           <p style={{ color: node.props.color, fontSize: `${node.props.fontSize}px` }}>
             {node.props.content}
@@ -29,12 +47,13 @@ function renderNode(node: ComponentNode) {
       return (
         <article
           key={node.id}
-          className="canvas-container"
+          className={`canvas-container canvas-node${selectedClassName}`}
           style={{
             gap: `${node.props.gap}px`,
             padding: `${node.props.padding}px`,
             backgroundColor: node.props.backgroundColor,
           }}
+          onClick={handleClick}
         >
           <div className="canvas-container-header">
             <span className="canvas-node-type">{node.type}</span>
@@ -43,7 +62,9 @@ function renderNode(node: ComponentNode) {
             </span>
           </div>
 
-          <div className="canvas-container-children">{node.children.map(renderNode)}</div>
+          <div className="canvas-container-children">
+            {node.children.map((child) => renderNode(child, selectedId, onNodeClick))}
+          </div>
         </article>
       )
 
@@ -52,6 +73,6 @@ function renderNode(node: ComponentNode) {
   }
 }
 
-export function PureRenderer({ schema }: PureRendererProps) {
-  return <>{schema.root.children.map(renderNode)}</>
+export function PureRenderer({ schema, selectedId = null, onNodeClick }: PureRendererProps) {
+  return <>{schema.root.children.map((node) => renderNode(node, selectedId, onNodeClick))}</>
 }

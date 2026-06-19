@@ -217,6 +217,24 @@
   letter-spacing: 0.06em;
 }
 
+.canvas-node {
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.canvas-node:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.08);
+}
+
+.canvas-node-selected {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
 .canvas-banner,
 .canvas-text,
 .canvas-container {
@@ -301,6 +319,20 @@
   background: #fafafa;
   padding: 12px 14px;
   color: var(--text);
+}
+
+.panel-empty-state {
+  display: grid;
+  gap: 10px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.panel-empty-state p {
+  margin: 0;
+  color: var(--text-soft);
 }
 
 .editor-preview {
