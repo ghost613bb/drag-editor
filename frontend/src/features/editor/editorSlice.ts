@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { findNodeById } from '@/features/editor/findNodeById'
 import { mockPageSchema } from '@/features/editor/mockSchema'
+import { removeNodeById } from '@/features/editor/removeNodeById'
 import type { ComponentNode, ComponentPropsPatch, EditorState, NodeId } from '@/types/schema'
 
 const initialState: EditorState = {
@@ -48,8 +49,25 @@ const editorSlice = createSlice({
       state.document.dirty = true
       state.ui.statusMessage = `已更新节点 ${node.id} 的属性`
     },
+    deleteSelectedNode(state) {
+      const { selectedId } = state.ui
+
+      if (!selectedId) {
+        return
+      }
+
+      const removed = removeNodeById(state.document.currentSchema.root, selectedId)
+
+      if (!removed) {
+        return
+      }
+
+      state.document.dirty = true
+      state.ui.selectedId = null
+      state.ui.statusMessage = `已删除节点 ${selectedId}`
+    },
   },
 })
 
-export const { selectNode, addNode, updateNodeProps } = editorSlice.actions
+export const { selectNode, addNode, updateNodeProps, deleteSelectedNode } = editorSlice.actions
 export const editorReducer = editorSlice.reducer

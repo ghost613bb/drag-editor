@@ -4,7 +4,7 @@ import { PropertyPanel } from '@/components/inspector/PropertyPanel'
 import { PureRenderer } from '@/components/renderer/PureRenderer'
 import type { AppDispatch, RootState } from '@/app/store'
 import { componentRegistry } from '@/features/editor/componentRegistry'
-import { addNode, selectNode, updateNodeProps } from '@/features/editor/editorSlice'
+import { addNode, deleteSelectedNode, selectNode, updateNodeProps } from '@/features/editor/editorSlice'
 import { createDefaultNode } from '@/features/editor/createDefaultNode'
 import { findNodeById } from '@/features/editor/findNodeById'
 import type { ComponentNode, ComponentPropsPatch, ComponentType } from '@/types/schema'
@@ -43,6 +43,14 @@ function App() {
     )
   }
 
+  const handleDeleteSelectedNode = () => {
+    if (!selectedNode) {
+      return
+    }
+
+    dispatch(deleteSelectedNode())
+  }
+
   return (
     <div className="editor-layout">
       <header className="editor-header">
@@ -57,6 +65,14 @@ function App() {
           </button>
           <button type="button" className="toolbar-button">
             恢复
+          </button>
+          <button
+            type="button"
+            className="toolbar-button toolbar-button-danger"
+            onClick={handleDeleteSelectedNode}
+            disabled={!selectedNode}
+          >
+            删除当前节点
           </button>
           <button type="button" className="toolbar-button toolbar-button-primary toolbar-button-export">
             <span className="toolbar-button-label">导出</span>

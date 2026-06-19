@@ -79,6 +79,23 @@
   border-color: #1d4ed8;
 }
 
+.toolbar-button-danger {
+  color: #b91c1c;
+  border-color: #f5c2c7;
+  background: #fff5f5;
+}
+
+.toolbar-button-danger:hover:not(:disabled) {
+  color: #ffffff;
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.toolbar-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .toolbar-button-export {
   display: inline-flex;
   align-items: center;
