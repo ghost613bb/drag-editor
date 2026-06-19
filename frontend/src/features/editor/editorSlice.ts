@@ -35,6 +35,24 @@ const editorSlice = createSlice({
       state.ui.selectedId = node.id
       state.ui.statusMessage = `已新增 ${node.type} 组件`
     },
+    reorderRootNodes(state, action: PayloadAction<{ activeId: NodeId; overId: NodeId }>) {
+      const { activeId, overId } = action.payload
+      const children = state.document.currentSchema.root.children
+      // - activeId：当前正在被拖动的节点 id
+      // - overId：当前拖到哪个节点上方/目标节点的 id
+      const activeIndex = children.findIndex((child) => child.id === activeId)
+      const overIndex = children.findIndex((child) => child.id === overId)
+
+      if (activeIndex < 0 || overIndex < 0 || activeIndex === overIndex) {
+        return
+      }
+      // 1. 先把activeIndex 位的节点删掉 [movedNode]是在解构取出这个被删掉的内容
+      const [movedNode] = children.splice(activeIndex, 1)
+      // 2. 把删掉的那个节点插入到 overIndex 位置
+      children.splice(overIndex, 0, movedNode)
+      state.document.dirty = true
+      state.ui.statusMessage = `已调整 ${movedNode.type} 组件顺序`
+    },
     updateNodeProps(state, action: PayloadAction<{ nodeId: NodeId; patch: ComponentPropsPatch }>) {
       const { nodeId, patch } = action.payload
       const node = findNodeById(state.document.currentSchema.root, nodeId)
@@ -87,5 +105,12 @@ const editorSlice = createSlice({
   },
 })
 
-export const { selectNode, addNode, updateNodeProps, deleteSelectedNode, duplicateSelectedNode } = editorSlice.actions
+export const {
+  selectNode,
+  addNode,
+  reorderRootNodes,
+  updateNodeProps,
+  deleteSelectedNode,
+  duplicateSelectedNode,
+} = editorSlice.actions
 export const editorReducer = editorSlice.reducer

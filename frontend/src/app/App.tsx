@@ -1,4 +1,12 @@
 import { useState } from 'react'
+import {
+  closestCenter,
+  type DragEndEvent,
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { PropertyPanel } from '@/components/inspector/PropertyPanel'
 import { PureRenderer } from '@/components/renderer/PureRenderer'
@@ -8,6 +16,7 @@ import {
   addNode,
   deleteSelectedNode,
   duplicateSelectedNode,
+  reorderRootNodes,
   selectNode,
   updateNodeProps,
 } from '@/features/editor/editorSlice'
@@ -18,6 +27,7 @@ import '@/styles/app.css'
 
 function App() {
   const dispatch = useDispatch<AppDispatch>()
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
   const materialItems = Object.values(componentRegistry)
   const currentSchema = useSelector((state: RootState) => state.editor.document.currentSchema)
   const selectedId = useSelector((state: RootState) => state.editor.ui.selectedId)
@@ -34,6 +44,21 @@ function App() {
 
   const handleSelectNode = (nodeId: string) => {
     dispatch(selectNode(nodeId))
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id) {
+      return
+    }
+
+    dispatch(
+      reorderRootNodes({
+        activeId: String(active.id),
+        overId: String(over.id),
+      }),
+    )
   }
 
   const handleUpdateSelectedNodeProps = (patch: ComponentPropsPatch) => {
@@ -134,13 +159,15 @@ function App() {
           </div>
 
           <div className="canvas-stage">
-            <div className="canvas-page">
-              <PureRenderer
-                schema={currentSchema}
-                selectedId={selectedId}
-                onNodeClick={handleSelectNode}
-              />
-            </div>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <div className="canvas-page">
+                <PureRenderer
+                  schema={currentSchema}
+                  selectedId={selectedId}
+                  onNodeClick={handleSelectNode}
+                />
+              </div>
+            </DndContext>
           </div>
         </section>
 

@@ -242,11 +242,16 @@
 }
 
 .canvas-node {
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
   transition:
     border-color 140ms ease,
     box-shadow 140ms ease,
     transform 140ms ease;
+}
+
+.canvas-node:active {
+  cursor: grabbing;
 }
 
 .canvas-node:hover {
