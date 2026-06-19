@@ -27,17 +27,15 @@ function App() {
     dispatch(selectNode(nodeId))
   }
 
-  const handleTextContentChange = (value: string) => {
-    if (!selectedNode || selectedNode.type !== 'text') {
+  const handleUpdateSelectedNodeProps = (patch: Parameters<typeof updateNodeProps>[0]['patch']) => {
+    if (!selectedNode) {
       return
     }
 
     dispatch(
       updateNodeProps({
         nodeId: selectedNode.id,
-        patch: {
-          content: value,
-        },
+        patch,
       }),
     )
   }
@@ -115,7 +113,7 @@ function App() {
             pageTitle={currentSchema.pageMeta.title}
             selectedId={selectedId}
             selectedNode={selectedNode}
-            onTextContentChange={handleTextContentChange}
+            onUpdateSelectedNodeProps={handleUpdateSelectedNodeProps}
           />
         </aside>
       </main>

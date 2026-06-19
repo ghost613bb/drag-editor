@@ -1,12 +1,11 @@
-import type { ChangeEvent } from 'react'
 import { componentRegistry } from '@/features/editor/componentRegistry'
-import type { ComponentNode, NodeId } from '@/types/schema'
+import type { ComponentNode, ComponentPropsPatch, NodeId } from '@/types/schema'
 
 interface PropertyPanelProps {
   pageTitle: string
   selectedId: NodeId | null
   selectedNode: ComponentNode | null
-  onTextContentChange: (value: string) => void
+  onUpdateSelectedNodeProps: (patch: ComponentPropsPatch) => void
 }
 
 function PropertyRow({ label, value }: { label: string; value: string | number }) {
@@ -20,7 +19,7 @@ function PropertyRow({ label, value }: { label: string; value: string | number }
 
 function renderTypeSpecificFields(
   node: ComponentNode,
-  onTextContentChange: (value: string) => void,
+  onUpdateSelectedNodeProps: (patch: ComponentPropsPatch) => void,
 ) {
   switch (node.type) {
     case 'banner':
@@ -28,9 +27,34 @@ function renderTypeSpecificFields(
         <div className="property-group">
           <h3 className="property-group-title">Banner 属性</h3>
           <div className="property-list">
-            <PropertyRow label="标题" value={node.props.title} />
-            <PropertyRow label="描述" value={node.props.description} />
-            <PropertyRow label="图片地址" value={node.props.imageUrl} />
+            <div className="property-item">
+              <label htmlFor="banner-title-input">标题</label>
+              <input
+                id="banner-title-input"
+                className="property-input"
+                value={node.props.title}
+                onChange={(event) => onUpdateSelectedNodeProps({ title: event.target.value })}
+              />
+            </div>
+            <div className="property-item">
+              <label htmlFor="banner-description-input">描述</label>
+              <textarea
+                id="banner-description-input"
+                className="property-textarea"
+                value={node.props.description}
+                onChange={(event) => onUpdateSelectedNodeProps({ description: event.target.value })}
+                rows={4}
+              />
+            </div>
+            <div className="property-item">
+              <label htmlFor="banner-image-input">图片地址</label>
+              <input
+                id="banner-image-input"
+                className="property-input"
+                value={node.props.imageUrl}
+                onChange={(event) => onUpdateSelectedNodeProps({ imageUrl: event.target.value })}
+              />
+            </div>
           </div>
         </div>
       )
@@ -46,12 +70,31 @@ function renderTypeSpecificFields(
                 id="text-content-input"
                 className="property-textarea"
                 value={node.props.content}
-                onChange={(event: ChangeEvent<HTMLTextAreaElement>) => onTextContentChange(event.target.value)}
+                onChange={(event) => onUpdateSelectedNodeProps({ content: event.target.value })}
                 rows={4}
               />
             </div>
-            <PropertyRow label="颜色" value={node.props.color} />
-            <PropertyRow label="字号" value={`${node.props.fontSize}px`} />
+            <div className="property-item">
+              <label htmlFor="text-color-input">颜色</label>
+              <input
+                id="text-color-input"
+                className="property-input"
+                value={node.props.color}
+                onChange={(event) => onUpdateSelectedNodeProps({ color: event.target.value })}
+              />
+            </div>
+            <div className="property-item">
+              <label htmlFor="text-font-size-input">字号</label>
+              <input
+                id="text-font-size-input"
+                className="property-input"
+                type="number"
+                value={node.props.fontSize}
+                onChange={(event) =>
+                  onUpdateSelectedNodeProps({ fontSize: Number(event.target.value) || 0 })
+                }
+              />
+            </div>
           </div>
         </div>
       )
@@ -61,10 +104,55 @@ function renderTypeSpecificFields(
         <div className="property-group">
           <h3 className="property-group-title">Container 属性</h3>
           <div className="property-list">
-            <PropertyRow label="布局方向" value={node.props.direction} />
-            <PropertyRow label="间距" value={`${node.props.gap}px`} />
-            <PropertyRow label="内边距" value={`${node.props.padding}px`} />
-            <PropertyRow label="背景色" value={node.props.backgroundColor} />
+            <div className="property-item">
+              <label htmlFor="container-direction-select">布局方向</label>
+              <select
+                id="container-direction-select"
+                className="property-select"
+                value={node.props.direction}
+                onChange={(event) =>
+                  onUpdateSelectedNodeProps({
+                    direction: event.target.value as 'vertical' | 'horizontal',
+                  })
+                }
+              >
+                <option value="vertical">vertical</option>
+                <option value="horizontal">horizontal</option>
+              </select>
+            </div>
+            <div className="property-item">
+              <label htmlFor="container-gap-input">间距</label>
+              <input
+                id="container-gap-input"
+                className="property-input"
+                type="number"
+                value={node.props.gap}
+                onChange={(event) => onUpdateSelectedNodeProps({ gap: Number(event.target.value) || 0 })}
+              />
+            </div>
+            <div className="property-item">
+              <label htmlFor="container-padding-input">内边距</label>
+              <input
+                id="container-padding-input"
+                className="property-input"
+                type="number"
+                value={node.props.padding}
+                onChange={(event) =>
+                  onUpdateSelectedNodeProps({ padding: Number(event.target.value) || 0 })
+                }
+              />
+            </div>
+            <div className="property-item">
+              <label htmlFor="container-background-input">背景色</label>
+              <input
+                id="container-background-input"
+                className="property-input"
+                value={node.props.backgroundColor}
+                onChange={(event) =>
+                  onUpdateSelectedNodeProps({ backgroundColor: event.target.value })
+                }
+              />
+            </div>
             <PropertyRow label="子节点数量" value={node.children.length} />
           </div>
         </div>
@@ -79,7 +167,7 @@ export function PropertyPanel({
   pageTitle,
   selectedId,
   selectedNode,
-  onTextContentChange,
+  onUpdateSelectedNodeProps,
 }: PropertyPanelProps) {
   if (!selectedNode) {
     return (
@@ -108,7 +196,7 @@ export function PropertyPanel({
         </div>
       </div>
 
-      {renderTypeSpecificFields(selectedNode, onTextContentChange)}
+      {renderTypeSpecificFields(selectedNode, onUpdateSelectedNodeProps)}
     </div>
   )
 }

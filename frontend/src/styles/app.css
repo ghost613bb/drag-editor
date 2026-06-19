@@ -267,6 +267,12 @@
   line-height: 1.2;
 }
 
+.canvas-banner-image-url {
+  font-size: 12px;
+  opacity: 0.88;
+  overflow-wrap: anywhere;
+}
+
 .canvas-banner p,
 .canvas-text p,
 .preview-card p {
@@ -299,8 +305,28 @@
 }
 
 .canvas-container-children {
-  display: grid;
+  display: flex;
+  align-items: stretch;
   gap: 12px;
+}
+
+.canvas-container-children-vertical {
+  flex-direction: column;
+}
+
+.canvas-container-children-vertical > * {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.canvas-container-children-horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.canvas-container-children-horizontal > * {
+  flex: 1 1 180px;
+  min-width: 0;
 }
 
 .property-panel-body {
@@ -354,10 +380,10 @@
   color: var(--text);
 }
 
+.property-input,
+.property-select,
 .property-textarea {
   width: 100%;
-  min-height: 112px;
-  resize: vertical;
   border-radius: 12px;
   border: 1px solid var(--line);
   background: #fafafa;
@@ -368,6 +394,13 @@
   line-height: 1.6;
 }
 
+.property-textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+
+.property-input:focus,
+.property-select:focus,
 .property-textarea:focus {
   outline: none;
   border-color: #60a5fa;

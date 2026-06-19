@@ -26,6 +26,7 @@ function renderNode(node: ComponentNode, selectedId?: NodeId | null, onNodeClick
           <span className="canvas-node-type">{node.type}</span>
           <strong>{node.props.title}</strong>
           <p>{node.props.description}</p>
+          <p className="canvas-banner-image-url">image: {node.props.imageUrl}</p>
         </article>
       )
 
@@ -62,7 +63,12 @@ function renderNode(node: ComponentNode, selectedId?: NodeId | null, onNodeClick
             </span>
           </div>
 
-          <div className="canvas-container-children">
+          <div
+            className={`canvas-container-children canvas-container-children-${node.props.direction}`}
+            style={{
+              gap: `${node.props.gap}px`,
+            }}
+          >
             {node.children.map((child) => renderNode(child, selectedId, onNodeClick))}
           </div>
         </article>
