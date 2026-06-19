@@ -115,11 +115,17 @@
 }
 
 .editor-panel {
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 18px;
   box-shadow: var(--shadow);
+}
+
+.editor-panel-center {
+  display: flex;
+  flex-direction: column;
 }
 
 .panel-header {
@@ -183,7 +189,8 @@
 }
 
 .canvas-stage {
-  min-height: 100%;
+  flex: 1;
+  min-height: 0;
   border-radius: 18px;
   background: var(--canvas-stage-bg);
   border: 1px solid var(--canvas-stage-border);
