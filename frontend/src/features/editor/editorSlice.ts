@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { duplicateNodeById } from '@/features/editor/duplicateNodeById'
 import { findNodeById } from '@/features/editor/findNodeById'
 import { mockPageSchema } from '@/features/editor/mockSchema'
 import { removeNodeById } from '@/features/editor/removeNodeById'
@@ -66,8 +67,25 @@ const editorSlice = createSlice({
       state.ui.selectedId = null
       state.ui.statusMessage = `已删除节点 ${selectedId}`
     },
+    duplicateSelectedNode(state) {
+      const { selectedId } = state.ui
+
+      if (!selectedId) {
+        return
+      }
+
+      const duplicatedNode = duplicateNodeById(state.document.currentSchema.root, selectedId)
+
+      if (!duplicatedNode) {
+        return
+      }
+
+      state.document.dirty = true
+      state.ui.selectedId = duplicatedNode.id
+      state.ui.statusMessage = `已复制 ${duplicatedNode.type} 组件`
+    },
   },
 })
 
-export const { selectNode, addNode, updateNodeProps, deleteSelectedNode } = editorSlice.actions
+export const { selectNode, addNode, updateNodeProps, deleteSelectedNode, duplicateSelectedNode } = editorSlice.actions
 export const editorReducer = editorSlice.reducer

@@ -4,7 +4,13 @@ import { PropertyPanel } from '@/components/inspector/PropertyPanel'
 import { PureRenderer } from '@/components/renderer/PureRenderer'
 import type { AppDispatch, RootState } from '@/app/store'
 import { componentRegistry } from '@/features/editor/componentRegistry'
-import { addNode, deleteSelectedNode, selectNode, updateNodeProps } from '@/features/editor/editorSlice'
+import {
+  addNode,
+  deleteSelectedNode,
+  duplicateSelectedNode,
+  selectNode,
+  updateNodeProps,
+} from '@/features/editor/editorSlice'
 import { createDefaultNode } from '@/features/editor/createDefaultNode'
 import { findNodeById } from '@/features/editor/findNodeById'
 import type { ComponentNode, ComponentPropsPatch, ComponentType } from '@/types/schema'
@@ -51,6 +57,14 @@ function App() {
     dispatch(deleteSelectedNode())
   }
 
+  const handleDuplicateSelectedNode = () => {
+    if (!selectedNode) {
+      return
+    }
+
+    dispatch(duplicateSelectedNode())
+  }
+
   return (
     <div className="editor-layout">
       <header className="editor-header">
@@ -65,6 +79,14 @@ function App() {
           </button>
           <button type="button" className="toolbar-button">
             恢复
+          </button>
+          <button
+            type="button"
+            className="toolbar-button"
+            onClick={handleDuplicateSelectedNode}
+            disabled={!selectedNode}
+          >
+            复制当前节点
           </button>
           <button
             type="button"
