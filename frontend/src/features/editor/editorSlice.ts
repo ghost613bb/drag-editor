@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { findNodeById } from '@/features/editor/findNodeById'
 import { mockPageSchema } from '@/features/editor/mockSchema'
-import type { ComponentPropsPatch, EditorState, NodeId } from '@/types/schema'
+import type { ComponentNode, ComponentPropsPatch, EditorState, NodeId } from '@/types/schema'
 
 const initialState: EditorState = {
   document: {
@@ -25,6 +25,14 @@ const editorSlice = createSlice({
     selectNode(state, action: PayloadAction<NodeId | null>) {
       state.ui.selectedId = action.payload
     },
+    addNode(state, action: PayloadAction<{ node: ComponentNode }>) {
+      const { node } = action.payload
+
+      state.document.currentSchema.root.children.push(node)
+      state.document.dirty = true
+      state.ui.selectedId = node.id
+      state.ui.statusMessage = `已新增 ${node.type} 组件`
+    },
     updateNodeProps(state, action: PayloadAction<{ nodeId: NodeId; patch: ComponentPropsPatch }>) {
       const { nodeId, patch } = action.payload
       const node = findNodeById(state.document.currentSchema.root, nodeId)
@@ -43,5 +51,5 @@ const editorSlice = createSlice({
   },
 })
 
-export const { selectNode, updateNodeProps } = editorSlice.actions
+export const { selectNode, addNode, updateNodeProps } = editorSlice.actions
 export const editorReducer = editorSlice.reducer

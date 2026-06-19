@@ -4,10 +4,10 @@ import { PropertyPanel } from '@/components/inspector/PropertyPanel'
 import { PureRenderer } from '@/components/renderer/PureRenderer'
 import type { AppDispatch, RootState } from '@/app/store'
 import { componentRegistry } from '@/features/editor/componentRegistry'
+import { addNode, selectNode, updateNodeProps } from '@/features/editor/editorSlice'
 import { createDefaultNode } from '@/features/editor/createDefaultNode'
-import { selectNode, updateNodeProps } from '@/features/editor/editorSlice'
 import { findNodeById } from '@/features/editor/findNodeById'
-import type { ComponentNode, ComponentType } from '@/types/schema'
+import type { ComponentNode, ComponentPropsPatch, ComponentType } from '@/types/schema'
 import '@/styles/app.css'
 
 function App() {
@@ -20,14 +20,17 @@ function App() {
   const selectedNode = selectedId ? findNodeById(currentSchema.root, selectedId) : null
 
   const handleCreateDraftNode = (type: ComponentType) => {
-    setDraftNode(createDefaultNode(type))
+    const nextDraftNode = createDefaultNode(type)
+
+    setDraftNode(nextDraftNode)
+    dispatch(addNode({ node: nextDraftNode }))
   }
 
   const handleSelectNode = (nodeId: string) => {
     dispatch(selectNode(nodeId))
   }
 
-  const handleUpdateSelectedNodeProps = (patch: Parameters<typeof updateNodeProps>[0]['patch']) => {
+  const handleUpdateSelectedNodeProps = (patch: ComponentPropsPatch) => {
     if (!selectedNode) {
       return
     }
@@ -44,7 +47,7 @@ function App() {
     <div className="editor-layout">
       <header className="editor-header">
         <div>
-          <p className="editor-kicker">Phase 4</p>
+          <p className="editor-kicker">Phase 5</p>
           <h1 className="editor-title">低代码编辑器页面骨架</h1>
         </div>
 
