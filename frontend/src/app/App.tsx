@@ -5,7 +5,7 @@ import { PureRenderer } from '@/components/renderer/PureRenderer'
 import type { AppDispatch, RootState } from '@/app/store'
 import { componentRegistry } from '@/features/editor/componentRegistry'
 import { createDefaultNode } from '@/features/editor/createDefaultNode'
-import { selectNode } from '@/features/editor/editorSlice'
+import { selectNode, updateNodeProps } from '@/features/editor/editorSlice'
 import { findNodeById } from '@/features/editor/findNodeById'
 import type { ComponentNode, ComponentType } from '@/types/schema'
 import '@/styles/app.css'
@@ -25,6 +25,21 @@ function App() {
 
   const handleSelectNode = (nodeId: string) => {
     dispatch(selectNode(nodeId))
+  }
+
+  const handleTextContentChange = (value: string) => {
+    if (!selectedNode || selectedNode.type !== 'text') {
+      return
+    }
+
+    dispatch(
+      updateNodeProps({
+        nodeId: selectedNode.id,
+        patch: {
+          content: value,
+        },
+      }),
+    )
   }
 
   return (
@@ -93,13 +108,14 @@ function App() {
         <aside className="editor-panel editor-panel-right">
           <div className="panel-header">
             <h2>属性面板</h2>
-            <span>{selectedNode ? '按节点类型展示属性' : '点击画布节点查看属性'}</span>
+            <span>{selectedNode ? '支持最小属性编辑闭环' : '点击画布节点查看属性'}</span>
           </div>
 
           <PropertyPanel
             pageTitle={currentSchema.pageMeta.title}
             selectedId={selectedId}
             selectedNode={selectedNode}
+            onTextContentChange={handleTextContentChange}
           />
         </aside>
       </main>

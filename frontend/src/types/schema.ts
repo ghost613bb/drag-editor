@@ -27,6 +27,11 @@ export interface ComponentPropsMap {
   container: ContainerProps
 }
 
+export type ComponentPropsPatch =
+  | Partial<BannerProps>
+  | Partial<TextProps>
+  | Partial<ContainerProps>
+
 export interface BaseNode<TType extends ComponentType> {
   id: NodeId
   type: TType
