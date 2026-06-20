@@ -1,3 +1,4 @@
+import { useDroppable } from '@dnd-kit/core'
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { ComponentNode, NodeId, PageSchema } from '@/types/schema'
@@ -12,6 +13,39 @@ interface SortableNodeRendererProps {
   node: ComponentNode
   selectedId?: NodeId | null
   onNodeClick?: (nodeId: NodeId) => void
+}
+
+function ChildrenDropZone({
+  containerId,
+  level,
+  className,
+  style,
+  children,
+}: {
+  containerId: NodeId
+  level: 'root' | 'nested'
+  className: string
+  style?: React.CSSProperties
+  children: React.ReactNode
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `children:${containerId}`,
+    data: {
+      kind: 'container-children-drop-zone',
+      containerId,
+      level,
+    },
+  })
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`${className} ${isOver ? 'canvas-children-drop-active' : ''}`}
+      style={style}
+    >
+      {children}
+    </div>
+  )
 }
 
 function SortableNodeRenderer({ node, selectedId, onNodeClick }: SortableNodeRendererProps) {
@@ -103,7 +137,9 @@ function SortableNodeRenderer({ node, selectedId, onNodeClick }: SortableNodeRen
             </span>
           </div>
 
-          <div
+          <ChildrenDropZone
+            containerId={node.id}
+            level="nested"
             className={`canvas-container-children canvas-container-children-${node.props.direction}`}
             style={{
               gap: `${node.props.gap}px`,
@@ -112,7 +148,7 @@ function SortableNodeRenderer({ node, selectedId, onNodeClick }: SortableNodeRen
             {node.children.map((child) => (
               <StaticNodeRenderer key={child.id} node={child} selectedId={selectedId} onNodeClick={onNodeClick} />
             ))}
-          </div>
+          </ChildrenDropZone>
         </article>
       )
 
@@ -170,7 +206,9 @@ function StaticNodeRenderer({ node, selectedId, onNodeClick }: SortableNodeRende
             </span>
           </div>
 
-          <div
+          <ChildrenDropZone
+            containerId={node.id}
+            level="nested"
             className={`canvas-container-children canvas-container-children-${node.props.direction}`}
             style={{
               gap: `${node.props.gap}px`,
@@ -179,7 +217,7 @@ function StaticNodeRenderer({ node, selectedId, onNodeClick }: SortableNodeRende
             {node.children.map((child) => (
               <StaticNodeRenderer key={child.id} node={child} selectedId={selectedId} onNodeClick={onNodeClick} />
             ))}
-          </div>
+          </ChildrenDropZone>
         </article>
       )
 
@@ -192,15 +230,21 @@ export function PureRenderer({ schema, selectedId = null, onNodeClick }: PureRen
   const rootNodeIds = schema.root.children.map((node) => node.id)
 
   return (
-    <SortableContext items={rootNodeIds} strategy={verticalListSortingStrategy}>
-      {schema.root.children.map((node) => (
-        <SortableNodeRenderer
-          key={node.id}
-          node={node}
-          selectedId={selectedId}
-          onNodeClick={onNodeClick}
-        />
-      ))}
-    </SortableContext>
+    <ChildrenDropZone
+      containerId={schema.root.id}
+      level="root"
+      className="canvas-root-children"
+    >
+      <SortableContext items={rootNodeIds} strategy={verticalListSortingStrategy}>
+        {schema.root.children.map((node) => (
+          <SortableNodeRenderer
+            key={node.id}
+            node={node}
+            selectedId={selectedId}
+            onNodeClick={onNodeClick}
+          />
+        ))}
+      </SortableContext>
+    </ChildrenDropZone>
   )
 }

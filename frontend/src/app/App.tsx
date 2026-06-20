@@ -4,7 +4,6 @@ import {
   type DragEndEvent,
   DndContext,
   PointerSensor,
-  useDroppable,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -24,7 +23,7 @@ import {
 } from '@/features/editor/editorSlice'
 import { createDefaultNode } from '@/features/editor/createDefaultNode'
 import { findNodeById } from '@/features/editor/findNodeById'
-import type { ComponentNode, ComponentPropsPatch, ComponentType } from '@/types/schema'
+import type { ComponentNode, ComponentPropsPatch, ComponentType, NodeId } from '@/types/schema'
 import '@/styles/app.css'
 
 function App() {
@@ -34,21 +33,14 @@ function App() {
   const currentSchema = useSelector((state: RootState) => state.editor.document.currentSchema)
   const selectedId = useSelector((state: RootState) => state.editor.ui.selectedId)
   const [draftNode, setDraftNode] = useState<ComponentNode | null>(null)
-  const { setNodeRef: setCanvasDropRef, isOver: isCanvasDropOver } = useDroppable({
-    id: 'root-canvas',
-    data: {
-      kind: 'drop-zone',
-      zone: 'root-canvas',
-    },
-  })
 
   const selectedNode = selectedId ? findNodeById(currentSchema.root, selectedId) : null
 
-  const handleInsertMaterial = (type: ComponentType) => {
+  const handleInsertMaterial = (type: ComponentType, containerId: NodeId = currentSchema.root.id) => {
     const nextDraftNode = createDefaultNode(type)
 
     setDraftNode(nextDraftNode)
-    dispatch(addNode({ node: nextDraftNode }))
+    dispatch(addNode({ node: nextDraftNode, containerId }))
   }
 
   const handleSelectNode = (nodeId: string) => {
@@ -67,11 +59,9 @@ function App() {
 
     if (activeData?.kind === 'material') {
       const componentType = activeData.componentType as ComponentType
-      const droppedOnRootCanvas = over.id === 'root-canvas'
-      const droppedOnRootNode = overData?.kind === 'canvas-node' && overData.level === 'root'
 
-      if (droppedOnRootCanvas || droppedOnRootNode) {
-        handleInsertMaterial(componentType)
+      if (overData?.kind === 'container-children-drop-zone') {
+        handleInsertMaterial(componentType, overData.containerId as NodeId)
       }
 
       return
@@ -124,7 +114,7 @@ function App() {
     <div className="editor-layout">
       <header className="editor-header">
         <div>
-          <p className="editor-kicker">Phase 5</p>
+          <p className="editor-kicker">Phase 6</p>
           <h1 className="editor-title">低代码编辑器页面骨架</h1>
         </div>
 
@@ -174,7 +164,7 @@ function App() {
                   label={item.label}
                   description={`${item.canHaveChildren ? '可承载子节点' : '基础叶子组件'} / type: ${item.type}`}
                   active={draftNode?.type === item.type}
-                  onInsert={handleInsertMaterial}
+                  onInsert={(type) => handleInsertMaterial(type, currentSchema.root.id)}
                 />
               ))}
             </div>
@@ -187,10 +177,7 @@ function App() {
             </div>
 
             <div className="canvas-stage">
-              <div
-                ref={setCanvasDropRef}
-                className={`canvas-page ${isCanvasDropOver ? 'canvas-page-drop-active' : ''}`}
-              >
+              <div className="canvas-page">
                 <PureRenderer
                   schema={currentSchema}
                   selectedId={selectedId}

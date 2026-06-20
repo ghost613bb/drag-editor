@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { duplicateNodeById } from '@/features/editor/duplicateNodeById'
 import { findNodeById } from '@/features/editor/findNodeById'
+import { insertNodeIntoContainerById } from '@/features/editor/insertNodeIntoContainerById'
 import { mockPageSchema } from '@/features/editor/mockSchema'
 import { removeNodeById } from '@/features/editor/removeNodeById'
 import type { ComponentNode, ComponentPropsPatch, EditorState, NodeId } from '@/types/schema'
@@ -27,13 +28,21 @@ const editorSlice = createSlice({
     selectNode(state, action: PayloadAction<NodeId | null>) {
       state.ui.selectedId = action.payload
     },
-    addNode(state, action: PayloadAction<{ node: ComponentNode }>) {
-      const { node } = action.payload
+    addNode(state, action: PayloadAction<{ node: ComponentNode; containerId?: NodeId }>) {
+      const { node, containerId = state.document.currentSchema.root.id } = action.payload
+      const insertedNode = insertNodeIntoContainerById(
+        state.document.currentSchema.root,
+        containerId,
+        node,
+      )
 
-      state.document.currentSchema.root.children.push(node)
+      if (!insertedNode) {
+        return
+      }
+
       state.document.dirty = true
-      state.ui.selectedId = node.id
-      state.ui.statusMessage = `已新增 ${node.type} 组件`
+      state.ui.selectedId = insertedNode.id
+      state.ui.statusMessage = `已新增 ${insertedNode.type} 组件`
     },
     reorderRootNodes(state, action: PayloadAction<{ activeId: NodeId; overId: NodeId }>) {
       const { activeId, overId } = action.payload
