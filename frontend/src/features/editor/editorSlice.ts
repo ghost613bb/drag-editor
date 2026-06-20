@@ -4,6 +4,7 @@ import { findNodeById } from '@/features/editor/findNodeById'
 import { insertNodeIntoContainerById } from '@/features/editor/insertNodeIntoContainerById'
 import { mockPageSchema } from '@/features/editor/mockSchema'
 import { removeNodeById } from '@/features/editor/removeNodeById'
+import { reorderNodeWithinContainerById } from '@/features/editor/reorderNodeWithinContainerById'
 import type { ComponentNode, ComponentPropsPatch, EditorState, NodeId } from '@/types/schema'
 
 const initialState: EditorState = {
@@ -44,21 +45,22 @@ const editorSlice = createSlice({
       state.ui.selectedId = insertedNode.id
       state.ui.statusMessage = `已新增 ${insertedNode.type} 组件`
     },
-    reorderRootNodes(state, action: PayloadAction<{ activeId: NodeId; overId: NodeId }>) {
-      const { activeId, overId } = action.payload
-      const children = state.document.currentSchema.root.children
-      // - activeId：当前正在被拖动的节点 id
-      // - overId：当前拖到哪个节点上方/目标节点的 id
-      const activeIndex = children.findIndex((child) => child.id === activeId)
-      const overIndex = children.findIndex((child) => child.id === overId)
+    reorderNodesInContainer(
+      state,
+      action: PayloadAction<{ containerId: NodeId; activeId: NodeId; overId: NodeId }>,
+    ) {
+      const { containerId, activeId, overId } = action.payload
+      const movedNode = reorderNodeWithinContainerById(
+        state.document.currentSchema.root,
+        containerId,
+        activeId,
+        overId,
+      )
 
-      if (activeIndex < 0 || overIndex < 0 || activeIndex === overIndex) {
+      if (!movedNode) {
         return
       }
-      // 1. 先把activeIndex 位的节点删掉 [movedNode]是在解构取出这个被删掉的内容
-      const [movedNode] = children.splice(activeIndex, 1)
-      // 2. 把删掉的那个节点插入到 overIndex 位置
-      children.splice(overIndex, 0, movedNode)
+
       state.document.dirty = true
       state.ui.statusMessage = `已调整 ${movedNode.type} 组件顺序`
     },
@@ -117,7 +119,7 @@ const editorSlice = createSlice({
 export const {
   selectNode,
   addNode,
-  reorderRootNodes,
+  reorderNodesInContainer,
   updateNodeProps,
   deleteSelectedNode,
   duplicateSelectedNode,

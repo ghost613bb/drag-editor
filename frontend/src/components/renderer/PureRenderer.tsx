@@ -11,6 +11,8 @@ interface PureRendererProps {
 
 interface SortableNodeRendererProps {
   node: ComponentNode
+  containerId: NodeId
+  level: 'root' | 'nested'
   selectedId?: NodeId | null
   onNodeClick?: (nodeId: NodeId) => void
 }
@@ -48,13 +50,20 @@ function ChildrenDropZone({
   )
 }
 
-function SortableNodeRenderer({ node, selectedId, onNodeClick }: SortableNodeRendererProps) {
+function SortableNodeRenderer({
+  node,
+  containerId,
+  level,
+  selectedId,
+  onNodeClick,
+}: SortableNodeRendererProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: node.id,
     data: {
       kind: 'canvas-node',
       nodeId: node.id,
-      level: 'root',
+      containerId,
+      level,
     },
   })
   const isSelected = node.id === selectedId
@@ -145,78 +154,21 @@ function SortableNodeRenderer({ node, selectedId, onNodeClick }: SortableNodeRen
               gap: `${node.props.gap}px`,
             }}
           >
-            {node.children.map((child) => (
-              <StaticNodeRenderer key={child.id} node={child} selectedId={selectedId} onNodeClick={onNodeClick} />
-            ))}
-          </ChildrenDropZone>
-        </article>
-      )
-
-    default:
-      return null
-  }
-}
-
-function StaticNodeRenderer({ node, selectedId, onNodeClick }: SortableNodeRendererProps) {
-  const isSelected = node.id === selectedId
-  const selectedClassName = isSelected ? ' canvas-node-selected' : ''
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation()
-    onNodeClick?.(node.id)
-  }
-
-  switch (node.type) {
-    case 'banner':
-      return (
-        <article key={node.id} className={`canvas-banner canvas-node${selectedClassName}`} onClick={handleClick}>
-          <span className="canvas-node-type">{node.type}</span>
-          <strong>{node.props.title}</strong>
-          <p>{node.props.description}</p>
-          <p className="canvas-banner-image-url">image: {node.props.imageUrl}</p>
-        </article>
-      )
-
-    case 'text':
-      return (
-        <article key={node.id} className={`canvas-text canvas-node${selectedClassName}`} onClick={handleClick}>
-          <span className="canvas-node-type">{node.type}</span>
-          <p style={{ color: node.props.color, fontSize: `${node.props.fontSize}px` }}>
-            {node.props.content}
-          </p>
-        </article>
-      )
-
-    case 'container':
-      return (
-        <article
-          key={node.id}
-          className={`canvas-container canvas-node${selectedClassName}`}
-          style={{
-            gap: `${node.props.gap}px`,
-            padding: `${node.props.padding}px`,
-            backgroundColor: node.props.backgroundColor,
-          }}
-          onClick={handleClick}
-        >
-          <div className="canvas-container-header">
-            <span className="canvas-node-type">{node.type}</span>
-            <span>
-              {node.props.direction} / {node.children.length} children
-            </span>
-          </div>
-
-          <ChildrenDropZone
-            containerId={node.id}
-            level="nested"
-            className={`canvas-container-children canvas-container-children-${node.props.direction}`}
-            style={{
-              gap: `${node.props.gap}px`,
-            }}
-          >
-            {node.children.map((child) => (
-              <StaticNodeRenderer key={child.id} node={child} selectedId={selectedId} onNodeClick={onNodeClick} />
-            ))}
+            <SortableContext
+              items={node.children.map((child) => child.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {node.children.map((child) => (
+                <SortableNodeRenderer
+                  key={child.id}
+                  node={child}
+                  containerId={node.id}
+                  level="nested"
+                  selectedId={selectedId}
+                  onNodeClick={onNodeClick}
+                />
+              ))}
+            </SortableContext>
           </ChildrenDropZone>
         </article>
       )
@@ -240,6 +192,8 @@ export function PureRenderer({ schema, selectedId = null, onNodeClick }: PureRen
           <SortableNodeRenderer
             key={node.id}
             node={node}
+            containerId={schema.root.id}
+            level="root"
             selectedId={selectedId}
             onNodeClick={onNodeClick}
           />

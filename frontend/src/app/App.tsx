@@ -17,7 +17,7 @@ import {
   addNode,
   deleteSelectedNode,
   duplicateSelectedNode,
-  reorderRootNodes,
+  reorderNodesInContainer,
   selectNode,
   updateNodeProps,
 } from '@/features/editor/editorSlice'
@@ -72,8 +72,16 @@ function App() {
     }
 
     if (activeData?.kind === 'canvas-node' && overData?.kind === 'canvas-node') {
+      const activeContainerId = activeData.containerId as NodeId
+      const overContainerId = overData.containerId as NodeId
+
+      if (activeContainerId !== overContainerId) {
+        return
+      }
+
       dispatch(
-        reorderRootNodes({
+        reorderNodesInContainer({
+          containerId: activeContainerId,
           activeId: String(active.id),
           overId: String(over.id),
         }),
@@ -114,7 +122,7 @@ function App() {
     <div className="editor-layout">
       <header className="editor-header">
         <div>
-          <p className="editor-kicker">Phase 6</p>
+          <p className="editor-kicker">Phase 7</p>
           <h1 className="editor-title">低代码编辑器页面骨架</h1>
         </div>
 
