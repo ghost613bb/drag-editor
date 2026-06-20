@@ -4,11 +4,13 @@ import {
   type DragEndEvent,
   DndContext,
   PointerSensor,
+  useDroppable,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { PropertyPanel } from '@/components/inspector/PropertyPanel'
+import { MaterialPaletteItem } from '@/components/materials/MaterialPaletteItem'
 import { PureRenderer } from '@/components/renderer/PureRenderer'
 import type { AppDispatch, RootState } from '@/app/store'
 import { componentRegistry } from '@/features/editor/componentRegistry'
@@ -32,10 +34,17 @@ function App() {
   const currentSchema = useSelector((state: RootState) => state.editor.document.currentSchema)
   const selectedId = useSelector((state: RootState) => state.editor.ui.selectedId)
   const [draftNode, setDraftNode] = useState<ComponentNode | null>(null)
+  const { setNodeRef: setCanvasDropRef, isOver: isCanvasDropOver } = useDroppable({
+    id: 'root-canvas',
+    data: {
+      kind: 'drop-zone',
+      zone: 'root-canvas',
+    },
+  })
 
   const selectedNode = selectedId ? findNodeById(currentSchema.root, selectedId) : null
 
-  const handleCreateDraftNode = (type: ComponentType) => {
+  const handleInsertMaterial = (type: ComponentType) => {
     const nextDraftNode = createDefaultNode(type)
 
     setDraftNode(nextDraftNode)
@@ -49,16 +58,37 @@ function App() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
 
-    if (!over || active.id === over.id) {
+    if (!over) {
       return
     }
 
-    dispatch(
-      reorderRootNodes({
-        activeId: String(active.id),
-        overId: String(over.id),
-      }),
-    )
+    const activeData = active.data.current
+    const overData = over.data.current
+
+    if (activeData?.kind === 'material') {
+      const componentType = activeData.componentType as ComponentType
+      const droppedOnRootCanvas = over.id === 'root-canvas'
+      const droppedOnRootNode = overData?.kind === 'canvas-node' && overData.level === 'root'
+
+      if (droppedOnRootCanvas || droppedOnRootNode) {
+        handleInsertMaterial(componentType)
+      }
+
+      return
+    }
+
+    if (active.id === over.id) {
+      return
+    }
+
+    if (activeData?.kind === 'canvas-node' && overData?.kind === 'canvas-node') {
+      dispatch(
+        reorderRootNodes({
+          activeId: String(active.id),
+          overId: String(over.id),
+        }),
+      )
+    }
   }
 
   const handleUpdateSelectedNodeProps = (patch: ComponentPropsPatch) => {
@@ -128,63 +158,63 @@ function App() {
         </div>
       </header>
 
-      <main className="editor-main">
-        <aside className="editor-panel editor-panel-left">
-          <div className="panel-header">
-            <h2>物料面板</h2>
-            <span>{materialItems.length} 个基础组件</span>
-          </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <main className="editor-main">
+          <aside className="editor-panel editor-panel-left">
+            <div className="panel-header">
+              <h2>物料面板</h2>
+              <span>{materialItems.length} 个基础组件</span>
+            </div>
 
-          <div className="material-list">
-            {materialItems.map((item) => (
-              <button
-                key={item.type}
-                type="button"
-                className={`material-card ${draftNode?.type === item.type ? 'material-card-active' : ''}`}
-                onClick={() => handleCreateDraftNode(item.type)}
+            <div className="material-list">
+              {materialItems.map((item) => (
+                <MaterialPaletteItem
+                  key={item.type}
+                  type={item.type}
+                  label={item.label}
+                  description={`${item.canHaveChildren ? '可承载子节点' : '基础叶子组件'} / type: ${item.type}`}
+                  active={draftNode?.type === item.type}
+                  onInsert={handleInsertMaterial}
+                />
+              ))}
+            </div>
+          </aside>
+
+          <section className="editor-panel editor-panel-center">
+            <div className="panel-header">
+              <h2>画布区域</h2>
+              <span>{currentSchema.pageMeta.title}</span>
+            </div>
+
+            <div className="canvas-stage">
+              <div
+                ref={setCanvasDropRef}
+                className={`canvas-page ${isCanvasDropOver ? 'canvas-page-drop-active' : ''}`}
               >
-                <strong>{item.label}</strong>
-                <span>
-                  {item.canHaveChildren ? '可承载子节点' : '基础叶子组件'} / type: {item.type}
-                </span>
-              </button>
-            ))}
-          </div>
-        </aside>
-
-        <section className="editor-panel editor-panel-center">
-          <div className="panel-header">
-            <h2>画布区域</h2>
-            <span>{currentSchema.pageMeta.title}</span>
-          </div>
-
-          <div className="canvas-stage">
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <div className="canvas-page">
                 <PureRenderer
                   schema={currentSchema}
                   selectedId={selectedId}
                   onNodeClick={handleSelectNode}
                 />
               </div>
-            </DndContext>
-          </div>
-        </section>
+            </div>
+          </section>
 
-        <aside className="editor-panel editor-panel-right">
-          <div className="panel-header">
-            <h2>属性面板</h2>
-            <span>{selectedNode ? '支持最小属性编辑闭环' : '点击画布节点查看属性'}</span>
-          </div>
+          <aside className="editor-panel editor-panel-right">
+            <div className="panel-header">
+              <h2>属性面板</h2>
+              <span>{selectedNode ? '支持最小属性编辑闭环' : '点击画布节点查看属性'}</span>
+            </div>
 
-          <PropertyPanel
-            pageTitle={currentSchema.pageMeta.title}
-            selectedId={selectedId}
-            selectedNode={selectedNode}
-            onUpdateSelectedNodeProps={handleUpdateSelectedNodeProps}
-          />
-        </aside>
-      </main>
+            <PropertyPanel
+              pageTitle={currentSchema.pageMeta.title}
+              selectedId={selectedId}
+              selectedNode={selectedNode}
+              onUpdateSelectedNodeProps={handleUpdateSelectedNodeProps}
+            />
+          </aside>
+        </main>
+      </DndContext>
 
       <section className="editor-preview editor-panel">
         <div className="panel-header">

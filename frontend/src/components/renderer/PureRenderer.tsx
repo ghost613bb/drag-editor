@@ -17,6 +17,11 @@ interface SortableNodeRendererProps {
 function SortableNodeRenderer({ node, selectedId, onNodeClick }: SortableNodeRendererProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: node.id,
+    data: {
+      kind: 'canvas-node',
+      nodeId: node.id,
+      level: 'root',
+    },
   })
   const isSelected = node.id === selectedId
   const selectedClassName = isSelected ? ' canvas-node-selected' : ''
