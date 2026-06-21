@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import {
   closestCenter,
+  type CollisionDetection,
   type DragEndEvent,
   DndContext,
   PointerSensor,
+  pointerWithin,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -17,6 +19,7 @@ import {
   addNode,
   deleteSelectedNode,
   duplicateSelectedNode,
+  moveExistingNode,
   reorderNodesInContainer,
   selectNode,
   updateNodeProps,
@@ -25,6 +28,15 @@ import { createDefaultNode } from '@/features/editor/createDefaultNode'
 import { findNodeById } from '@/features/editor/findNodeById'
 import type { ComponentNode, ComponentPropsPatch, ComponentType, NodeId } from '@/types/schema'
 import '@/styles/app.css'
+
+const containerAwareCollisionDetection: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args)
+  const materialContainerCollision = pointerCollisions.find(
+    ({ data }) => data?.droppableContainer.data.current?.kind === 'container-children-drop-zone',
+  )
+
+  return materialContainerCollision ? [materialContainerCollision] : closestCenter(args)
+}
 
 function App() {
   const dispatch = useDispatch<AppDispatch>()
@@ -71,21 +83,41 @@ function App() {
       return
     }
 
-    if (activeData?.kind === 'canvas-node' && overData?.kind === 'canvas-node') {
+    if (activeData?.kind === 'canvas-node') {
       const activeContainerId = activeData.containerId as NodeId
-      const overContainerId = overData.containerId as NodeId
 
-      if (activeContainerId !== overContainerId) {
+      if (overData?.kind === 'canvas-node') {
+        const overContainerId = overData.containerId as NodeId
+
+        if (activeContainerId !== overContainerId) {
+          return
+        }
+
+        dispatch(
+          reorderNodesInContainer({
+            containerId: activeContainerId,
+            activeId: String(active.id),
+            overId: String(over.id),
+          }),
+        )
+
         return
       }
 
-      dispatch(
-        reorderNodesInContainer({
-          containerId: activeContainerId,
-          activeId: String(active.id),
-          overId: String(over.id),
-        }),
-      )
+      if (overData?.kind === 'container-children-drop-zone') {
+        const targetContainerId = overData.containerId as NodeId
+
+        if (activeContainerId === targetContainerId) {
+          return
+        }
+
+        dispatch(
+          moveExistingNode({
+            nodeId: String(active.id),
+            targetContainerId,
+          }),
+        )
+      }
     }
   }
 
@@ -156,7 +188,7 @@ function App() {
         </div>
       </header>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={containerAwareCollisionDetection} onDragEnd={handleDragEnd}>
         <main className="editor-main">
           <aside className="editor-panel editor-panel-left">
             <div className="panel-header">

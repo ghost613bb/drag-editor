@@ -244,16 +244,53 @@
 
 .canvas-root-children,
 .canvas-container-children {
+  border-radius: 14px;
   transition:
     border-color 140ms ease,
     background-color 140ms ease,
     box-shadow 140ms ease;
 }
 
-.canvas-children-drop-active {
-  border-radius: 14px;
+.canvas-root-children {
+  display: grid;
+  gap: 14px;
+  min-height: 100%;
+}
+
+.canvas-root-children.canvas-children-drop-active {
   background: rgba(96, 165, 250, 0.08);
   box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.28);
+}
+
+.canvas-container-children:empty {
+  min-height: 56px;
+}
+
+.canvas-container-children.canvas-children-drop-active {
+  background: transparent;
+  box-shadow: none;
+}
+
+.canvas-container:has(> .canvas-container-children.canvas-children-drop-active) {
+  border-color: #60a5fa;
+  box-shadow:
+    0 0 0 2px rgba(96, 165, 250, 0.18),
+    0 18px 36px rgba(37, 99, 235, 0.12);
+}
+
+.canvas-container:has(> .canvas-container-children.canvas-children-drop-active)::after {
+  content: '释放到此容器';
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  pointer-events: none;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .canvas-node-type {
@@ -338,6 +375,7 @@
 }
 
 .canvas-container {
+  position: relative;
   display: grid;
   gap: 14px;
   min-height: 140px;

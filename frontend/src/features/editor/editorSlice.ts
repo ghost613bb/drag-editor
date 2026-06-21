@@ -3,6 +3,7 @@ import { duplicateNodeById } from '@/features/editor/duplicateNodeById'
 import { findNodeById } from '@/features/editor/findNodeById'
 import { insertNodeIntoContainerById } from '@/features/editor/insertNodeIntoContainerById'
 import { mockPageSchema } from '@/features/editor/mockSchema'
+import { moveNodeToContainerById } from '@/features/editor/moveNodeToContainerById'
 import { removeNodeById } from '@/features/editor/removeNodeById'
 import { reorderNodeWithinContainerById } from '@/features/editor/reorderNodeWithinContainerById'
 import type { ComponentNode, ComponentPropsPatch, EditorState, NodeId } from '@/types/schema'
@@ -79,6 +80,25 @@ const editorSlice = createSlice({
       state.document.dirty = true
       state.ui.statusMessage = `已更新节点 ${node.id} 的属性`
     },
+    moveExistingNode(
+      state,
+      action: PayloadAction<{ nodeId: NodeId; targetContainerId: NodeId }>,
+    ) {
+      const { nodeId, targetContainerId } = action.payload
+      const moveResult = moveNodeToContainerById(
+        state.document.currentSchema.root,
+        nodeId,
+        targetContainerId,
+      )
+
+      if (!moveResult) {
+        return
+      }
+
+      state.document.dirty = true
+      state.ui.selectedId = moveResult.movedNode.id
+      state.ui.statusMessage = `已移动 ${moveResult.movedNode.type} 组件`
+    },
     deleteSelectedNode(state) {
       const { selectedId } = state.ui
 
@@ -121,6 +141,7 @@ export const {
   addNode,
   reorderNodesInContainer,
   updateNodeProps,
+  moveExistingNode,
   deleteSelectedNode,
   duplicateSelectedNode,
 } = editorSlice.actions
