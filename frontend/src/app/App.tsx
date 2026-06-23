@@ -15,19 +15,30 @@ import { MaterialPaletteItem } from '@/components/materials/MaterialPaletteItem'
 import { PureRenderer } from '@/components/renderer/PureRenderer'
 import type { AppDispatch, RootState } from '@/app/store'
 import { componentRegistry } from '@/features/editor/componentRegistry'
+import { createDefaultNode } from '@/features/editor/createDefaultNode'
 import {
   addNode,
   deleteSelectedNode,
   duplicateSelectedNode,
+  exportSchemaSucceeded,
+  loadSchemaFailed,
+  loadSchemaStarted,
+  loadSchemaSucceeded,
   moveExistingNode,
   reorderNodesInContainer,
+  saveSchemaFailed,
+  saveSchemaStarted,
+  saveSchemaSucceeded,
   selectNode,
   updateNodeProps,
 } from '@/features/editor/editorSlice'
-import { createDefaultNode } from '@/features/editor/createDefaultNode'
+import { exportPageSchemaAsJson } from '@/features/editor/exportPageSchemaAsJson'
 import { findNodeById } from '@/features/editor/findNodeById'
+import { loadSchema, saveSchema } from '@/services/api/schema'
 import type { ComponentNode, ComponentPropsPatch, ComponentType, NodeId } from '@/types/schema'
 import '@/styles/app.css'
+
+const DEMO_SCHEMA_ID = 'demo-page'
 
 const containerAwareCollisionDetection: CollisionDetection = (args) => {
   const pointerCollisions = pointerWithin(args)
@@ -43,16 +54,48 @@ function App() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
   const materialItems = Object.values(componentRegistry)
   const currentSchema = useSelector((state: RootState) => state.editor.document.currentSchema)
+  const dirty = useSelector((state: RootState) => state.editor.document.dirty)
+  const saveStatus = useSelector((state: RootState) => state.editor.ui.saveStatus)
+  const loadStatus = useSelector((state: RootState) => state.editor.ui.loadStatus)
+  const statusMessage = useSelector((state: RootState) => state.editor.ui.statusMessage)
   const selectedId = useSelector((state: RootState) => state.editor.ui.selectedId)
   const [draftNode, setDraftNode] = useState<ComponentNode | null>(null)
 
   const selectedNode = selectedId ? findNodeById(currentSchema.root, selectedId) : null
+  const saving = saveStatus === 'loading'
+  const loading = loadStatus === 'loading'
 
   const handleInsertMaterial = (type: ComponentType, containerId: NodeId = currentSchema.root.id) => {
     const nextDraftNode = createDefaultNode(type)
 
     setDraftNode(nextDraftNode)
     dispatch(addNode({ node: nextDraftNode, containerId }))
+  }
+
+  const handleSaveSchema = async () => {
+    try {
+      dispatch(saveSchemaStarted())
+      const savedSchema = await saveSchema(DEMO_SCHEMA_ID, currentSchema)
+      dispatch(saveSchemaSucceeded(savedSchema))
+    } catch (error) {
+      dispatch(saveSchemaFailed(error instanceof Error ? error.message : 'Schema 保存失败'))
+    }
+  }
+
+  const handleLoadSchema = async () => {
+    try {
+      dispatch(loadSchemaStarted())
+      const loadedSchema = await loadSchema(DEMO_SCHEMA_ID)
+      setDraftNode(null)
+      dispatch(loadSchemaSucceeded(loadedSchema))
+    } catch (error) {
+      dispatch(loadSchemaFailed(error instanceof Error ? error.message : 'Schema 恢复失败'))
+    }
+  }
+
+  const handleExportJson = () => {
+    exportPageSchemaAsJson(currentSchema)
+    dispatch(exportSchemaSucceeded())
   }
 
   const handleSelectNode = (nodeId: string) => {
@@ -154,16 +197,19 @@ function App() {
     <div className="editor-layout">
       <header className="editor-header">
         <div>
-          <p className="editor-kicker">Phase 7</p>
+          <p className="editor-kicker">Phase 8</p>
           <h1 className="editor-title">低代码编辑器页面骨架</h1>
+          <p className="editor-status">
+            {statusMessage} {dirty ? '· 有未保存修改' : '· 已保存'}
+          </p>
         </div>
 
         <div className="editor-toolbar">
-          <button type="button" className="toolbar-button">
-            保存
+          <button type="button" className="toolbar-button" onClick={handleSaveSchema} disabled={!dirty || saving}>
+            {saving ? '保存中...' : '保存'}
           </button>
-          <button type="button" className="toolbar-button">
-            恢复
+          <button type="button" className="toolbar-button" onClick={handleLoadSchema} disabled={loading}>
+            {loading ? '恢复中...' : '恢复'}
           </button>
           <button
             type="button"
@@ -181,7 +227,7 @@ function App() {
           >
             删除当前节点
           </button>
-          <button type="button" className="toolbar-button toolbar-button-primary toolbar-button-export">
+          <button type="button" className="toolbar-button toolbar-button-primary toolbar-button-export" onClick={handleExportJson}>
             <span className="toolbar-button-label">导出</span>
             <span className="toolbar-button-token">JSON</span>
           </button>

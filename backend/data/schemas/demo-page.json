@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "pageMeta": {
+    "id": "demo-page",
+    "title": "Demo"
+  },
+  "root": {
+    "id": "root",
+    "type": "container",
+    "props": {
+      "direction": "vertical",
+      "gap": 8,
+      "padding": 8,
+      "backgroundColor": "#fff"
+    },
+    "children": []
+  }
+}

@@ -6,12 +6,16 @@ import { mockPageSchema } from '@/features/editor/mockSchema'
 import { moveNodeToContainerById } from '@/features/editor/moveNodeToContainerById'
 import { removeNodeById } from '@/features/editor/removeNodeById'
 import { reorderNodeWithinContainerById } from '@/features/editor/reorderNodeWithinContainerById'
-import type { ComponentNode, ComponentPropsPatch, EditorState, NodeId } from '@/types/schema'
+import type { ComponentNode, ComponentPropsPatch, EditorState, NodeId, PageSchema } from '@/types/schema'
+
+function cloneSchema(schema: PageSchema) {
+  return structuredClone(schema)
+}
 
 const initialState: EditorState = {
   document: {
-    currentSchema: mockPageSchema,
-    publishedSchema: mockPageSchema,
+    currentSchema: cloneSchema(mockPageSchema),
+    publishedSchema: cloneSchema(mockPageSchema),
     dirty: false,
   },
   ui: {
@@ -133,6 +137,41 @@ const editorSlice = createSlice({
       state.ui.selectedId = duplicatedNode.id
       state.ui.statusMessage = `已复制 ${duplicatedNode.type} 组件`
     },
+    saveSchemaStarted(state) {
+      state.ui.saveStatus = 'loading'
+      state.ui.statusMessage = '正在保存 Schema...'
+    },
+    saveSchemaSucceeded(state, action: PayloadAction<PageSchema>) {
+      state.document.publishedSchema = cloneSchema(action.payload)
+      state.document.dirty = false
+      state.ui.saveStatus = 'success'
+      state.ui.statusMessage = 'Schema 保存成功'
+    },
+    saveSchemaFailed(state, action: PayloadAction<string>) {
+      state.ui.saveStatus = 'error'
+      state.ui.statusMessage = action.payload
+    },
+    loadSchemaStarted(state) {
+      state.ui.loadStatus = 'loading'
+      state.ui.statusMessage = '正在恢复 Schema...'
+    },
+    loadSchemaSucceeded(state, action: PayloadAction<PageSchema>) {
+      const schema = cloneSchema(action.payload)
+
+      state.document.currentSchema = schema
+      state.document.publishedSchema = cloneSchema(action.payload)
+      state.document.dirty = false
+      state.ui.selectedId = null
+      state.ui.loadStatus = 'success'
+      state.ui.statusMessage = 'Schema 恢复成功'
+    },
+    loadSchemaFailed(state, action: PayloadAction<string>) {
+      state.ui.loadStatus = 'error'
+      state.ui.statusMessage = action.payload
+    },
+    exportSchemaSucceeded(state) {
+      state.ui.statusMessage = 'Schema JSON 已导出'
+    },
   },
 })
 
@@ -144,5 +183,12 @@ export const {
   moveExistingNode,
   deleteSelectedNode,
   duplicateSelectedNode,
+  saveSchemaStarted,
+  saveSchemaSucceeded,
+  saveSchemaFailed,
+  loadSchemaStarted,
+  loadSchemaSucceeded,
+  loadSchemaFailed,
+  exportSchemaSucceeded,
 } = editorSlice.actions
 export const editorReducer = editorSlice.reducer
