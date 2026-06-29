@@ -47,13 +47,13 @@ export const componentRegistry: ComponentRegistry = {
     type: 'form',
     label: 'Form',
     defaultProps: {
-      title: '领取专属看房礼包',
-      buttonText: '立即预约',
+      title: '提交组件配置需求',
+      buttonText: '提交需求',
       fields: [
         {
           id: 'default-name',
-          label: '姓名',
-          placeholder: '请输入姓名',
+          label: '联系人',
+          placeholder: '请输入联系人',
           type: 'text',
           required: true,
         },
@@ -72,10 +72,10 @@ export const componentRegistry: ComponentRegistry = {
     type: 'activity-card',
     label: 'Activity Card',
     defaultProps: {
-      title: '限时特惠房源',
-      subtitle: '预约到访可享专属折扣',
-      price: '总价 198 万起',
-      tags: ['近地铁', '精装交付', '限时折扣'],
+      title: '组件能力亮点',
+      subtitle: '展示可拖拽编辑器的核心模块与配置项',
+      price: '3 个核心能力',
+      tags: ['拖拽编排', '属性配置', '实时预览'],
     },
     canHaveChildren: false,
   },

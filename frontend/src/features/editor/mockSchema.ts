@@ -3,9 +3,9 @@ import type { PageSchema } from '@/types/schema'
 export const mockPageSchema: PageSchema = {
   version: 1,
   pageMeta: {
-    id: 'summer-campaign',
-    title: '夏日营销活动页',
-    description: '用于 Phase 1 / Phase 2 演示的默认页面结构。',
+    id: 'drag-editor-demo',
+    title: '可拖拽编辑器演示页',
+    description: '用于演示物料拖拽、容器编排和属性配置的默认页面结构。',
   },
   root: {
     id: 'root-container',
@@ -21,16 +21,16 @@ export const mockPageSchema: PageSchema = {
         id: 'banner-1',
         type: 'banner',
         props: {
-          title: '暑期购房节',
-          description: '精选特惠房源，限时领取专属优惠。',
-          imageUrl: 'https://dummyimage.com/1200x320/4f46e5/ffffff&text=Summer+Campaign',
+          title: '可拖拽编辑器',
+          description: '拖入物料、调整层级，并在右侧面板实时配置组件属性。',
+          imageUrl: 'https://dummyimage.com/1200x320/4f46e5/ffffff&text=Drag+Editor',
         },
       },
       {
         id: 'text-1',
         type: 'text',
         props: {
-          content: '通过低代码编辑器快速搭建你的活动页面。',
+          content: '通过低代码编辑器快速搭建你的页面结构。',
           color: '#0f172a',
           fontSize: 16,
         },
@@ -39,23 +39,23 @@ export const mockPageSchema: PageSchema = {
         id: 'activity-card-1',
         type: 'activity-card',
         props: {
-          title: '限时特惠房源',
-          subtitle: '预约到访可享专属折扣',
-          price: '总价 198 万起',
-          tags: ['近地铁', '精装交付', '限时折扣'],
+          title: '组件能力亮点',
+          subtitle: '展示可拖拽编辑器的核心模块与配置项',
+          price: '3 个核心能力',
+          tags: ['拖拽编排', '属性配置', '实时预览'],
         },
       },
       {
         id: 'form-1',
         type: 'form',
         props: {
-          title: '领取专属看房礼包',
-          buttonText: '立即预约',
+          title: '提交组件配置需求',
+          buttonText: '提交需求',
           fields: [
             {
               id: 'form-1-field-name',
-              label: '姓名',
-              placeholder: '请输入姓名',
+              label: '联系人',
+              placeholder: '请输入联系人',
               type: 'text',
               required: true,
             },
