@@ -2,6 +2,21 @@ import type { ComponentPropsMap, ComponentType, FormField, NodeId } from '@/type
 
 export type ComponentCategory = '基础' | '布局' | '表单' | '展示'
 
+export type PropertyControlType = 'text' | 'textarea' | 'number' | 'select' | 'stringList'
+
+export interface PropertySelectOption {
+  label: string
+  value: string | number | boolean
+}
+
+export interface PropertyFieldSchema<TType extends ComponentType = ComponentType> {
+  prop: keyof ComponentPropsMap[TType]
+  label: string
+  control: PropertyControlType
+  rows?: number
+  options?: readonly PropertySelectOption[]
+}
+
 export interface ComponentRegistryItem<TType extends ComponentType> {
   type: TType
   label: string
@@ -12,6 +27,7 @@ export interface ComponentRegistryItem<TType extends ComponentType> {
   createDefaultProps: (nodeId: NodeId) => ComponentPropsMap[TType]
   cloneProps: (props: ComponentPropsMap[TType], nextNodeId: NodeId) => ComponentPropsMap[TType]
   canHaveChildren: boolean
+  propertySchema: readonly PropertyFieldSchema<TType>[]
 }
 
 export type ComponentRegistry = {
@@ -48,6 +64,11 @@ export const componentRegistry: ComponentRegistry = {
       return { ...props }
     },
     canHaveChildren: false,
+    propertySchema: [
+      { prop: 'title', label: '标题', control: 'text' },
+      { prop: 'description', label: '描述', control: 'textarea', rows: 4 },
+      { prop: 'imageUrl', label: '图片地址', control: 'text' },
+    ],
   },
   text: {
     type: 'text',
@@ -67,6 +88,11 @@ export const componentRegistry: ComponentRegistry = {
       return { ...props }
     },
     canHaveChildren: false,
+    propertySchema: [
+      { prop: 'content', label: '文本内容', control: 'textarea', rows: 4 },
+      { prop: 'color', label: '颜色', control: 'text' },
+      { prop: 'fontSize', label: '字号', control: 'number' },
+    ],
   },
   container: {
     type: 'container',
@@ -87,6 +113,20 @@ export const componentRegistry: ComponentRegistry = {
       return { ...props }
     },
     canHaveChildren: true,
+    propertySchema: [
+      {
+        prop: 'direction',
+        label: '布局方向',
+        control: 'select',
+        options: [
+          { label: 'vertical', value: 'vertical' },
+          { label: 'horizontal', value: 'horizontal' },
+        ],
+      },
+      { prop: 'gap', label: '间距', control: 'number' },
+      { prop: 'padding', label: '内边距', control: 'number' },
+      { prop: 'backgroundColor', label: '背景色', control: 'text' },
+    ],
   },
   form: {
     type: 'form',
@@ -127,6 +167,10 @@ export const componentRegistry: ComponentRegistry = {
       }
     },
     canHaveChildren: false,
+    propertySchema: [
+      { prop: 'title', label: '表单标题', control: 'text' },
+      { prop: 'buttonText', label: '按钮文案', control: 'text' },
+    ],
   },
   'activity-card': {
     type: 'activity-card',
@@ -153,5 +197,11 @@ export const componentRegistry: ComponentRegistry = {
       }
     },
     canHaveChildren: false,
+    propertySchema: [
+      { prop: 'title', label: '标题', control: 'text' },
+      { prop: 'subtitle', label: '副标题', control: 'textarea', rows: 3 },
+      { prop: 'price', label: '亮点信息', control: 'text' },
+      { prop: 'tags', label: '标签（每行一个）', control: 'stringList', rows: 4 },
+    ],
   },
 }
