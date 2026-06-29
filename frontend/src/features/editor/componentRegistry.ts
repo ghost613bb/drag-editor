@@ -43,4 +43,40 @@ export const componentRegistry: ComponentRegistry = {
     },
     canHaveChildren: true,
   },
+  form: {
+    type: 'form',
+    label: 'Form',
+    defaultProps: {
+      title: '领取专属看房礼包',
+      buttonText: '立即预约',
+      fields: [
+        {
+          id: 'default-name',
+          label: '姓名',
+          placeholder: '请输入姓名',
+          type: 'text',
+          required: true,
+        },
+        {
+          id: 'default-phone',
+          label: '手机号',
+          placeholder: '请输入手机号',
+          type: 'phone',
+          required: true,
+        },
+      ],
+    },
+    canHaveChildren: false,
+  },
+  'activity-card': {
+    type: 'activity-card',
+    label: 'Activity Card',
+    defaultProps: {
+      title: '限时特惠房源',
+      subtitle: '预约到访可享专属折扣',
+      price: '总价 198 万起',
+      tags: ['近地铁', '精装交付', '限时折扣'],
+    },
+    canHaveChildren: false,
+  },
 }

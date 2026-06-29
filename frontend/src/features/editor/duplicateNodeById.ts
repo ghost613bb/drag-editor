@@ -1,13 +1,27 @@
 import type {
+  ActivityCardNode,
   BannerNode,
   ComponentNode,
   ContainerNode,
+  FormField,
+  FormNode,
   NodeId,
   TextNode,
 } from '@/types/schema'
 
 function createClonedNodeId(type: ComponentNode['type']) {
   return `${type}-${crypto.randomUUID()}`
+}
+
+function createClonedFieldId(nodeId: NodeId) {
+  return `${nodeId}-field-${crypto.randomUUID()}`
+}
+
+function cloneFormField(field: FormField, nodeId: NodeId): FormField {
+  return {
+    ...field,
+    id: createClonedFieldId(nodeId),
+  }
 }
 
 function cloneBannerNode(node: BannerNode): BannerNode {
@@ -26,6 +40,30 @@ function cloneTextNode(node: TextNode): TextNode {
   }
 }
 
+function cloneFormNode(node: FormNode): FormNode {
+  const id = createClonedNodeId(node.type)
+
+  return {
+    id,
+    type: node.type,
+    props: {
+      ...node.props,
+      fields: node.props.fields.map((field) => cloneFormField(field, id)),
+    },
+  }
+}
+
+function cloneActivityCardNode(node: ActivityCardNode): ActivityCardNode {
+  return {
+    id: createClonedNodeId(node.type),
+    type: node.type,
+    props: {
+      ...node.props,
+      tags: [...node.props.tags],
+    },
+  }
+}
+
 function cloneContainerNode(node: ContainerNode): ContainerNode {
   return {
     id: createClonedNodeId(node.type),
@@ -41,6 +79,10 @@ function cloneNodeWithFreshIds(node: ComponentNode): ComponentNode {
       return cloneBannerNode(node)
     case 'text':
       return cloneTextNode(node)
+    case 'form':
+      return cloneFormNode(node)
+    case 'activity-card':
+      return cloneActivityCardNode(node)
     case 'container':
       return cloneContainerNode(node)
     default:

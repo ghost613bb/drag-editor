@@ -33,7 +33,7 @@ schemaRouter.get('/api/schema/:id', async (ctx) => {
   if (!schema) {
     ctx.status = 404
     ctx.body = {
-      message: 'Schema not found',
+      message: '尚未保存过该页面 Schema',
     }
     return
   }
@@ -47,7 +47,7 @@ schemaRouter.put('/api/schema/:id', async (ctx) => {
   if (!isValidPageSchema(schema)) {
     ctx.status = 400
     ctx.body = {
-      message: 'Invalid page schema',
+      message: 'Schema 数据结构不合法',
     }
     return
   }

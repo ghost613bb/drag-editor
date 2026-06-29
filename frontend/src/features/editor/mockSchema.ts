@@ -36,6 +36,40 @@ export const mockPageSchema: PageSchema = {
         },
       },
       {
+        id: 'activity-card-1',
+        type: 'activity-card',
+        props: {
+          title: '限时特惠房源',
+          subtitle: '预约到访可享专属折扣',
+          price: '总价 198 万起',
+          tags: ['近地铁', '精装交付', '限时折扣'],
+        },
+      },
+      {
+        id: 'form-1',
+        type: 'form',
+        props: {
+          title: '领取专属看房礼包',
+          buttonText: '立即预约',
+          fields: [
+            {
+              id: 'form-1-field-name',
+              label: '姓名',
+              placeholder: '请输入姓名',
+              type: 'text',
+              required: true,
+            },
+            {
+              id: 'form-1-field-phone',
+              label: '手机号',
+              placeholder: '请输入手机号',
+              type: 'phone',
+              required: true,
+            },
+          ],
+        },
+      },
+      {
         id: 'container-1',
         type: 'container',
         props: {

@@ -124,6 +124,63 @@ function SortableNodeRenderer({
         </article>
       )
 
+    case 'form':
+      return (
+        <article
+          ref={setNodeRef}
+          key={node.id}
+          style={style}
+          className={`canvas-form canvas-node${selectedClassName}`}
+          onClick={handleClick}
+          {...dragHandle}
+        >
+          <span className="canvas-node-type">{node.type}</span>
+          <strong className="canvas-form-title">{node.props.title}</strong>
+          <div className="canvas-form-fields">
+            {node.props.fields.map((field) => (
+              <div className="canvas-form-field" key={field.id}>
+                <div className="canvas-form-field-label">
+                  <span>{field.label}</span>
+                  {field.required ? <span className="canvas-form-required">必填</span> : null}
+                </div>
+                <div className="canvas-form-field-placeholder">
+                  {field.placeholder || (field.type === 'phone' ? '请输入手机号' : '请输入内容')}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="canvas-form-button" type="button" tabIndex={-1}>
+            {node.props.buttonText}
+          </button>
+        </article>
+      )
+
+    case 'activity-card':
+      return (
+        <article
+          ref={setNodeRef}
+          key={node.id}
+          style={style}
+          className={`canvas-activity-card canvas-node${selectedClassName}`}
+          onClick={handleClick}
+          {...dragHandle}
+        >
+          <span className="canvas-node-type">{node.type}</span>
+          <div>
+            <strong className="canvas-activity-card-title">{node.props.title}</strong>
+            <p className="canvas-activity-card-subtitle">{node.props.subtitle}</p>
+          </div>
+          <p className="canvas-activity-card-price">{node.props.price}</p>
+          <div className="canvas-activity-card-tags">
+            {node.props.tags.map((tag, index) => (
+              <span className="canvas-activity-card-tag" key={`${tag}-${index}`}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        </article>
+      )
+
     case 'container':
       return (
         <article

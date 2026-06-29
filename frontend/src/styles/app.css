@@ -338,7 +338,9 @@
 
 .canvas-banner,
 .canvas-text,
-.canvas-container {
+.canvas-container,
+.canvas-form,
+.canvas-activity-card {
   border-radius: 14px;
   padding: 18px;
 }
@@ -369,6 +371,8 @@
 
 .canvas-banner p,
 .canvas-text p,
+.canvas-form p,
+.canvas-activity-card p,
 .preview-card p {
   margin: 0;
 }
@@ -422,6 +426,111 @@
 .canvas-container-children-horizontal > * {
   flex: 1 1 180px;
   min-width: 0;
+}
+
+.canvas-form {
+  display: grid;
+  gap: 14px;
+  background: #f8fafc;
+  border: 1px solid #dbeafe;
+  color: var(--canvas-strong-text);
+}
+
+.canvas-form-title {
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+.canvas-form-fields {
+  display: grid;
+  gap: 10px;
+}
+
+.canvas-form-field {
+  display: grid;
+  gap: 6px;
+}
+
+.canvas-form-field-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.canvas-form-required {
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.canvas-form-field-placeholder {
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 10px 12px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.canvas-form-button {
+  border: 0;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 11px 14px;
+  font: inherit;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.canvas-activity-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #fecaca;
+  background: linear-gradient(135deg, #fff7ed 0%, #fff1f2 100%);
+  color: #7f1d1d;
+}
+
+.canvas-activity-card-title {
+  display: block;
+  margin-bottom: 6px;
+  color: #7f1d1d;
+  font-size: 21px;
+  line-height: 1.25;
+}
+
+.canvas-activity-card-subtitle {
+  color: #9f1239;
+  font-size: 14px;
+}
+
+.canvas-activity-card-price {
+  color: #dc2626;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.canvas-activity-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.canvas-activity-card-tag {
+  border-radius: 999px;
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .property-panel-body {
@@ -492,6 +601,104 @@
 .property-textarea {
   min-height: 112px;
   resize: vertical;
+}
+
+.property-field-section {
+  display: grid;
+  gap: 12px;
+}
+
+.property-field-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-faint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.property-field-list {
+  display: grid;
+  gap: 12px;
+}
+
+.property-field-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fafafa;
+  padding: 14px;
+}
+
+.property-field-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.property-field-card-header strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.property-field-meta {
+  display: block;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.property-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.property-checkbox-row input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.property-small-button {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--text);
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.property-small-button:hover:not(:disabled) {
+  border-color: #93c5fd;
+  color: #2563eb;
+}
+
+.property-danger-button {
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.property-danger-button:hover:not(:disabled) {
+  border-color: #dc2626;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.property-small-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .property-input:focus,

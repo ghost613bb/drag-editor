@@ -1,6 +1,6 @@
 export type NodeId = string
 
-export type ComponentType = 'banner' | 'text' | 'container'
+export type ComponentType = 'banner' | 'text' | 'container' | 'form' | 'activity-card'
 
 export interface BannerProps {
   title: string
@@ -21,16 +21,43 @@ export interface ContainerProps {
   backgroundColor: string
 }
 
+export type FormFieldType = 'text' | 'phone'
+
+export interface FormField {
+  id: string
+  label: string
+  placeholder: string
+  type: FormFieldType
+  required: boolean
+}
+
+export interface FormProps {
+  title: string
+  buttonText: string
+  fields: FormField[]
+}
+
+export interface ActivityCardProps {
+  title: string
+  subtitle: string
+  price: string
+  tags: string[]
+}
+
 export interface ComponentPropsMap {
   banner: BannerProps
   text: TextProps
   container: ContainerProps
+  form: FormProps
+  'activity-card': ActivityCardProps
 }
 
 export type ComponentPropsPatch =
   | Partial<BannerProps>
   | Partial<TextProps>
   | Partial<ContainerProps>
+  | Partial<FormProps>
+  | Partial<ActivityCardProps>
 
 export interface BaseNode<TType extends ComponentType> {
   id: NodeId
@@ -38,15 +65,19 @@ export interface BaseNode<TType extends ComponentType> {
   props: ComponentPropsMap[TType]
 }
 
-export interface BannerNode extends BaseNode<'banner'> {}
+export type BannerNode = BaseNode<'banner'>
 
-export interface TextNode extends BaseNode<'text'> {}
+export type TextNode = BaseNode<'text'>
+
+export type FormNode = BaseNode<'form'>
+
+export type ActivityCardNode = BaseNode<'activity-card'>
 
 export interface ContainerNode extends BaseNode<'container'> {
   children: ComponentNode[]
 }
 
-export type ComponentNode = BannerNode | TextNode | ContainerNode
+export type ComponentNode = BannerNode | TextNode | ContainerNode | FormNode | ActivityCardNode
 
 export interface PageMeta {
   id: string
@@ -66,6 +97,12 @@ export interface EditorDocumentState {
   dirty: boolean
 }
 
+export interface EditorHistoryState {
+  past: PageSchema[]
+  future: PageSchema[]
+  activePropertyEditGroup: string | null
+}
+
 export type AsyncStatus = 'idle' | 'loading' | 'success' | 'error'
 
 export interface EditorUIState {
@@ -79,4 +116,5 @@ export interface EditorUIState {
 export interface EditorState {
   document: EditorDocumentState
   ui: EditorUIState
+  history: EditorHistoryState
 }

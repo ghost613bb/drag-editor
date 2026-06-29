@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   closestCenter,
   type CollisionDetection,
@@ -20,16 +20,19 @@ import {
   addNode,
   deleteSelectedNode,
   duplicateSelectedNode,
+  endPropertyEditGesture,
   exportSchemaSucceeded,
   loadSchemaFailed,
   loadSchemaStarted,
   loadSchemaSucceeded,
   moveExistingNode,
+  redoLastChange,
   reorderNodesInContainer,
   saveSchemaFailed,
   saveSchemaStarted,
   saveSchemaSucceeded,
   selectNode,
+  undoLastChange,
   updateNodeProps,
 } from '@/features/editor/editorSlice'
 import { exportPageSchemaAsJson } from '@/features/editor/exportPageSchemaAsJson'
@@ -37,6 +40,10 @@ import { findNodeById } from '@/features/editor/findNodeById'
 import { loadSchema, saveSchema } from '@/services/api/schema'
 import type { ComponentNode, ComponentPropsPatch, ComponentType, NodeId } from '@/types/schema'
 import '@/styles/app.css'
+
+interface PropertyUpdateOptions {
+  historyGroupId?: string
+}
 
 const DEMO_SCHEMA_ID = 'demo-page'
 
@@ -59,11 +66,57 @@ function App() {
   const loadStatus = useSelector((state: RootState) => state.editor.ui.loadStatus)
   const statusMessage = useSelector((state: RootState) => state.editor.ui.statusMessage)
   const selectedId = useSelector((state: RootState) => state.editor.ui.selectedId)
+  const canUndo = useSelector((state: RootState) => state.editor.history.past.length > 0)
+  const canRedo = useSelector((state: RootState) => state.editor.history.future.length > 0)
   const [draftNode, setDraftNode] = useState<ComponentNode | null>(null)
 
   const selectedNode = selectedId ? findNodeById(currentSchema.root, selectedId) : null
   const saving = saveStatus === 'loading'
   const loading = loadStatus === 'loading'
+
+  const handleUndo = () => {
+    setDraftNode(null)
+    dispatch(undoLastChange())
+  }
+
+  const handleRedo = () => {
+    setDraftNode(null)
+    dispatch(redoLastChange())
+  }
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase()
+      const modifierPressed = event.metaKey || event.ctrlKey
+
+      if (!modifierPressed) {
+        return
+      }
+
+      const wantsUndo = key === 'z' && !event.shiftKey
+      const wantsRedo = (key === 'z' && event.shiftKey) || key === 'y'
+
+      if (!wantsUndo && !wantsRedo) {
+        return
+      }
+
+      event.preventDefault()
+
+      if (wantsUndo && canUndo) {
+        setDraftNode(null)
+        dispatch(undoLastChange())
+        return
+      }
+
+      if (wantsRedo && canRedo) {
+        setDraftNode(null)
+        dispatch(redoLastChange())
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [canRedo, canUndo, dispatch])
 
   const handleInsertMaterial = (type: ComponentType, containerId: NodeId = currentSchema.root.id) => {
     const nextDraftNode = createDefaultNode(type)
@@ -83,6 +136,14 @@ function App() {
   }
 
   const handleLoadSchema = async () => {
+    if (dirty) {
+      const confirmed = window.confirm('恢复会覆盖当前未保存修改，并清空撤销/重做历史。确定继续吗？')
+
+      if (!confirmed) {
+        return
+      }
+    }
+
     try {
       dispatch(loadSchemaStarted())
       const loadedSchema = await loadSchema(DEMO_SCHEMA_ID)
@@ -114,9 +175,15 @@ function App() {
 
     if (activeData?.kind === 'material') {
       const componentType = activeData.componentType as ComponentType
+      const targetContainerId =
+        overData?.kind === 'container-children-drop-zone'
+          ? overData.containerId as NodeId
+          : overData?.kind === 'canvas-node'
+            ? overData.containerId as NodeId
+            : null
 
-      if (overData?.kind === 'container-children-drop-zone') {
-        handleInsertMaterial(componentType, overData.containerId as NodeId)
+      if (targetContainerId) {
+        handleInsertMaterial(componentType, targetContainerId)
       }
 
       return
@@ -164,7 +231,10 @@ function App() {
     }
   }
 
-  const handleUpdateSelectedNodeProps = (patch: ComponentPropsPatch) => {
+  const handleUpdateSelectedNodeProps = (
+    patch: ComponentPropsPatch,
+    options?: PropertyUpdateOptions,
+  ) => {
     if (!selectedNode) {
       return
     }
@@ -173,8 +243,13 @@ function App() {
       updateNodeProps({
         nodeId: selectedNode.id,
         patch,
+        historyGroupId: options?.historyGroupId,
       }),
     )
+  }
+
+  const handleEndPropertyEditGesture = () => {
+    dispatch(endPropertyEditGesture())
   }
 
   const handleDeleteSelectedNode = () => {
@@ -197,7 +272,7 @@ function App() {
     <div className="editor-layout">
       <header className="editor-header">
         <div>
-          <p className="editor-kicker">Phase 8</p>
+          <p className="editor-kicker">Phase 9</p>
           <h1 className="editor-title">低代码编辑器页面骨架</h1>
           <p className="editor-status">
             {statusMessage} {dirty ? '· 有未保存修改' : '· 已保存'}
@@ -210,6 +285,24 @@ function App() {
           </button>
           <button type="button" className="toolbar-button" onClick={handleLoadSchema} disabled={loading}>
             {loading ? '恢复中...' : '恢复'}
+          </button>
+          <button
+            type="button"
+            className="toolbar-button"
+            onClick={handleUndo}
+            disabled={!canUndo}
+            title="撤销：Ctrl/⌘ + Z"
+          >
+            撤销
+          </button>
+          <button
+            type="button"
+            className="toolbar-button"
+            onClick={handleRedo}
+            disabled={!canRedo}
+            title="重做：Ctrl/⌘ + Shift + Z / Ctrl + Y"
+          >
+            重做
           </button>
           <button
             type="button"
@@ -284,6 +377,7 @@ function App() {
               selectedId={selectedId}
               selectedNode={selectedNode}
               onUpdateSelectedNodeProps={handleUpdateSelectedNodeProps}
+              onEndPropertyEditGesture={handleEndPropertyEditGesture}
             />
           </aside>
         </main>
