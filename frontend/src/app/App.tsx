@@ -332,7 +332,7 @@ function App() {
           <aside className="editor-panel editor-panel-left">
             <div className="panel-header">
               <h2>物料面板</h2>
-              <span>{materialItems.length} 个基础组件</span>
+              <span>{materialItems.length} 个可用组件</span>
             </div>
 
             <div className="material-list">
@@ -341,7 +341,9 @@ function App() {
                   key={item.type}
                   type={item.type}
                   label={item.label}
-                  description={`${item.canHaveChildren ? '可承载子节点' : '基础叶子组件'} / type: ${item.type}`}
+                  icon={item.icon}
+                  category={item.category}
+                  description={item.description}
                   active={draftNode?.type === item.type}
                   onInsert={(type) => handleInsertMaterial(type, currentSchema.root.id)}
                 />

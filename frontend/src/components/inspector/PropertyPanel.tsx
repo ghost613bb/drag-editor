@@ -390,7 +390,7 @@ function renderTypeSpecificFields(
               />
             </div>
             <div className="property-item">
-              <label htmlFor="activity-card-price-input">价格</label>
+              <label htmlFor="activity-card-price-input">亮点信息</label>
               <input
                 id="activity-card-price-input"
                 className="property-input"
@@ -443,7 +443,11 @@ export function PropertyPanel({
         <h3 className="property-group-title">基础信息</h3>
         <div className="property-list">
           <PropertyRow label="页面标题" value={pageTitle} />
-          <PropertyRow label="当前节点" value={registryItem.label} />
+          <PropertyRow label="组件名称" value={registryItem.label} />
+          <PropertyRow label="组件类型" value={registryItem.type} />
+          <PropertyRow label="组件分类" value={registryItem.category} />
+          <PropertyRow label="组件标识" value={registryItem.icon} />
+          <PropertyRow label="组件描述" value={registryItem.description} />
           <PropertyRow label="节点 ID" value={selectedNode.id} />
           <PropertyRow label="Redux selectedId" value={selectedId ?? '未选中'} />
           <PropertyRow

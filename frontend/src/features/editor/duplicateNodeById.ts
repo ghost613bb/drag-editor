@@ -1,93 +1,31 @@
-import type {
-  ActivityCardNode,
-  BannerNode,
-  ComponentNode,
-  ContainerNode,
-  FormField,
-  FormNode,
-  NodeId,
-  TextNode,
-} from '@/types/schema'
+import { componentRegistry } from '@/features/editor/componentRegistry'
+import type { ComponentNode, ContainerNode, NodeId } from '@/types/schema'
 
 function createClonedNodeId(type: ComponentNode['type']) {
   return `${type}-${crypto.randomUUID()}`
 }
 
-function createClonedFieldId(nodeId: NodeId) {
-  return `${nodeId}-field-${crypto.randomUUID()}`
-}
-
-function cloneFormField(field: FormField, nodeId: NodeId): FormField {
-  return {
-    ...field,
-    id: createClonedFieldId(nodeId),
-  }
-}
-
-function cloneBannerNode(node: BannerNode): BannerNode {
-  return {
-    id: createClonedNodeId(node.type),
-    type: node.type,
-    props: { ...node.props },
-  }
-}
-
-function cloneTextNode(node: TextNode): TextNode {
-  return {
-    id: createClonedNodeId(node.type),
-    type: node.type,
-    props: { ...node.props },
-  }
-}
-
-function cloneFormNode(node: FormNode): FormNode {
+function cloneNodeWithFreshIds(node: ComponentNode): ComponentNode {
   const id = createClonedNodeId(node.type)
+  const registryItem = componentRegistry[node.type] as {
+    cloneProps: (props: typeof node.props, nextNodeId: NodeId) => typeof node.props
+  }
+  const props = registryItem.cloneProps(node.props, id)
+
+  if (node.type === 'container') {
+    return {
+      id,
+      type: node.type,
+      props,
+      children: node.children.map(cloneNodeWithFreshIds),
+    } as ContainerNode
+  }
 
   return {
     id,
     type: node.type,
-    props: {
-      ...node.props,
-      fields: node.props.fields.map((field) => cloneFormField(field, id)),
-    },
-  }
-}
-
-function cloneActivityCardNode(node: ActivityCardNode): ActivityCardNode {
-  return {
-    id: createClonedNodeId(node.type),
-    type: node.type,
-    props: {
-      ...node.props,
-      tags: [...node.props.tags],
-    },
-  }
-}
-
-function cloneContainerNode(node: ContainerNode): ContainerNode {
-  return {
-    id: createClonedNodeId(node.type),
-    type: node.type,
-    props: { ...node.props },
-    children: node.children.map(cloneNodeWithFreshIds),
-  }
-}
-
-function cloneNodeWithFreshIds(node: ComponentNode): ComponentNode {
-  switch (node.type) {
-    case 'banner':
-      return cloneBannerNode(node)
-    case 'text':
-      return cloneTextNode(node)
-    case 'form':
-      return cloneFormNode(node)
-    case 'activity-card':
-      return cloneActivityCardNode(node)
-    case 'container':
-      return cloneContainerNode(node)
-    default:
-      throw new Error(`Unsupported component type: ${node satisfies never}`)
-  }
+    props,
+  } as ComponentNode
 }
 
 function duplicateInChildren(children: ComponentNode[], targetId: NodeId): ComponentNode | null {

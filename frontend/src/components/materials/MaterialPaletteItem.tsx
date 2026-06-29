@@ -1,10 +1,13 @@
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
+import type { ComponentCategory } from '@/features/editor/componentRegistry'
 import type { ComponentType } from '@/types/schema'
 
 interface MaterialPaletteItemProps {
   type: ComponentType
   label: string
+  icon: string
+  category: ComponentCategory
   description: string
   active: boolean
   onInsert: (type: ComponentType) => void
@@ -13,6 +16,8 @@ interface MaterialPaletteItemProps {
 export function MaterialPaletteItem({
   type,
   label,
+  icon,
+  category,
   description,
   active,
   onInsert,
@@ -40,8 +45,14 @@ export function MaterialPaletteItem({
       {...attributes}
       {...listeners}
     >
-      <strong>{label}</strong>
-      <span>{description}</span>
+      <span className="material-card-header">
+        <span className="material-card-icon" aria-hidden="true">
+          {icon}
+        </span>
+        <span className="material-card-title">{label}</span>
+        <span className="material-card-category">{category}</span>
+      </span>
+      <span className="material-card-description">{description}</span>
     </button>
   )
 }

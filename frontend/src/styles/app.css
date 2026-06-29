@@ -178,8 +178,8 @@
 .material-card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+  align-items: stretch;
+  gap: 8px;
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -211,9 +211,49 @@
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.08);
 }
 
-.material-card span {
+.material-card-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.material-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: #eef2ff;
+  color: #4338ca;
   font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.material-card-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.material-card-category {
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: var(--text-faint);
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.material-card-description {
   color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .canvas-stage {
